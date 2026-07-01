@@ -320,18 +320,7 @@
             }
         }
 
-        document.addEventListener('visibilitychange', function() {
-            if (document.hidden && activeAudio && !isPaused) {
-                if (activeInterval) {
-                    clearInterval(activeInterval);
-                    activeInterval = null;
-                }
-                activeAudio.pause();
-                isPaused = true;
-                setPauseBtnIcon('play');
-                if (activePlayBtn) setPlayBtnIcon(activePlayBtn, 'play');
-            }
-        });
+
 
         document.querySelectorAll('.play-btn:not(.played)').forEach(function(btn) {
             btn.addEventListener('click', async function() {
