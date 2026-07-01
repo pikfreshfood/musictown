@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Log in to PulseWave and continue streaming music.">
+    <title>Login - PulseWave</title>
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700,800" rel="stylesheet">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+<body>
+    <main class="auth-page">
+        <a class="brand auth-brand" href="{{ url('/') }}" aria-label="PulseWave home">
+            <span class="brand-mark">P</span>
+            <span>PulseWave</span>
+        </a>
+
+        <section class="auth-shell">
+            <div class="auth-copy">
+                <p class="eyebrow">Welcome back</p>
+                <h1>Resume your soundstream.</h1>
+                <p>Log in to keep your playlists, revenue tracking, and daily music sessions moving in sync.</p>
+
+                <div class="mini-player" aria-label="Featured mix">
+                    <div class="disc-art">
+                        <span></span>
+                    </div>
+                    <div>
+                        <small>Featured Mix</small>
+                        <strong>Midnight Afro Wave</strong>
+                    </div>
+                    <div class="wave-bars" aria-hidden="true">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+
+            <form class="auth-card" method="POST" action="{{ route('login.submit') }}">
+                @csrf
+                <div class="auth-card-heading">
+                    <p class="eyebrow">Login</p>
+                    <h2>Access your account</h2>
+                </div>
+
+                @if (session('status'))
+                    <p class="form-message success-message">{{ session('status') }}</p>
+                @endif
+
+                @if ($errors->any())
+                    <div class="form-message error-message">
+                        @foreach ($errors->all() as $error)
+                            <p>{{ $error }}</p>
+                        @endforeach
+                    </div>
+                @endif
+
+                <label>
+                    Email address
+                    <input type="email" name="email" value="{{ old('email') }}" placeholder="you@example.com" autocomplete="email" required>
+                </label>
+
+                <label>
+                    Password
+                    <span class="password-field">
+                        <input type="password" name="password" placeholder="Enter password" autocomplete="current-password" required>
+                        <button class="password-toggle" type="button" aria-label="Show password" data-password-toggle>
+                            <svg class="icon-eye" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            <svg class="icon-eye-off" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="m3 3 18 18"></path>
+                                <path d="M10.6 5.2A10.7 10.7 0 0 1 12 5c6 0 9.5 7 9.5 7a16.6 16.6 0 0 1-2.2 3.1"></path>
+                                <path d="M6.1 6.7C3.7 8.4 2.5 12 2.5 12s3.5 7 9.5 7a9.8 9.8 0 0 0 4.1-.9"></path>
+                                <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"></path>
+                            </svg>
+                        </button>
+                    </span>
+                </label>
+
+                <div class="form-row">
+                    <label class="check-field">
+                        <input type="checkbox" name="remember">
+                        <span>Remember me</span>
+                    </label>
+                    <a href="#">Forgot password?</a>
+                </div>
+
+                <button class="button auth-submit" type="submit">Login</button>
+
+                <p class="auth-switch">
+                    New to PulseWave?
+                    <a href="{{ route('signup') }}">Create account</a>
+                </p>
+            </form>
+        </section>
+    </main>
+</body>
+</html>
