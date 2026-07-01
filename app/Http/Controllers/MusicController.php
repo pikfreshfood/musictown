@@ -12,21 +12,23 @@ class MusicController extends Controller
     {
         $user = Auth::user();
 
-        $alreadyListened = Listen::where('user_id', $user->id)
+        $lastListen = Listen::where('user_id', $user->id)
             ->where('song_id', $songId)
-            ->where('listened_date', today())
-            ->exists();
+            ->latest('listened_at')
+            ->first();
 
-        if ($alreadyListened) {
+        if ($lastListen && $lastListen->listened_at->gt(now()->subMinutes(30))) {
+            $minsLeft = 30 - now()->diffInMinutes($lastListen->listened_at);
             return response()->json([
-                'error' => 'You have already listened to this song today.',
+                'error' => 'Please check back in ' . $minsLeft . ' min.',
+                'cooldown' => $minsLeft,
             ], 403);
         }
 
         Listen::create([
             'user_id' => $user->id,
             'song_id' => $songId,
-            'listened_date' => today(),
+            'listened_at' => now(),
         ]);
 
         return response()->json(['success' => true]);

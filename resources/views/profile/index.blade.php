@@ -85,12 +85,12 @@
                     @php
                         $mins = intdiv($song->duration, 60);
                         $secs = $song->duration % 60;
-                        $alreadyPlayed = in_array($song->id, $listenedToday);
+                        $onCooldown = in_array($song->id, $listenedRecent);
                     @endphp
                     <div class="song-card" data-song-id="{{ $song->id }}" data-duration="{{ $song->duration }}" data-audio-url="{{ $song->audio_url ? asset('storage/' . $song->audio_url) : '' }}" style="cursor:default;">
-                        @if ($alreadyPlayed)
-                            <div class="play-btn played" aria-label="Already played today">
-                                <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:white;font-size:1.1rem;">&#10003;</span>
+                        @if ($onCooldown)
+                            <div class="play-btn played" aria-label="On cooldown">
+                                <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:white;font-size:1.1rem;">&#9202;</span>
                             </div>
                         @else
                             <button class="play-btn" data-song-id="{{ $song->id }}" data-title="{{ $song->title }}" data-artist="{{ $song->artist }}" aria-label="Play {{ $song->title }}">
@@ -102,8 +102,8 @@
                             <small class="song-artist">{{ $song->artist }}</small>
                         </span>
                         <small class="song-duration">{{ $mins }}:{{ str_pad($secs, 2, '0') }}</small>
-                        @if ($alreadyPlayed)
-                            <small class="played-tag">Played today</small>
+                        @if ($onCooldown)
+                            <small class="played-tag">Check back in 30 min</small>
                         @endif
                     </div>
                 @endforeach

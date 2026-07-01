@@ -9,13 +9,13 @@ class Listen extends Model
     protected $fillable = [
         'user_id',
         'song_id',
-        'listened_date',
+        'listened_at',
     ];
 
     protected function casts(): array
     {
         return [
-            'listened_date' => 'date',
+            'listened_at' => 'datetime',
         ];
     }
 

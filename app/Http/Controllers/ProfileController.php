@@ -16,12 +16,12 @@ class ProfileController extends Controller
         $user = Auth::user();
         $songs = Song::paginate(10);
 
-        $listenedToday = Listen::where('user_id', $user->id)
-            ->where('listened_date', today())
+        $listenedRecent = Listen::where('user_id', $user->id)
+            ->where('listened_at', '>=', now()->subMinutes(30))
             ->pluck('song_id')
             ->toArray();
 
-        return view('profile.index', compact('user', 'songs', 'listenedToday'));
+        return view('profile.index', compact('user', 'songs', 'listenedRecent'));
     }
 
     public function settings()
