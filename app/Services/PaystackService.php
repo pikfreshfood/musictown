@@ -33,10 +33,6 @@ class PaystackService
             ? $this->updateCustomer($existing->customer_code, $user)
             : $this->createCustomer($user);
 
-        if (empty($customer['phone']) && $this->normalizePhone($user->phone)) {
-            $customer = $this->updateCustomer($customer['customer_code'], $user);
-        }
-
         $account = $this->createDedicatedAccount($customer['customer_code']);
 
         return $this->persistVirtualAccount($user, $customer, $account, $existing);
@@ -83,11 +79,8 @@ class PaystackService
             'email' => $user->email,
             'first_name' => $nameParts[0] ?? $user->name,
             'last_name' => $nameParts[1] ?? $nameParts[0] ?? $user->name,
+            'phone' => $this->resolvePhone($user),
         ];
-
-        if ($phone = $this->normalizePhone($user->phone)) {
-            $payload['phone'] = $phone;
-        }
 
         $response = $this->client()->post('/customer', $payload);
 
@@ -100,11 +93,8 @@ class PaystackService
         $payload = [
             'first_name' => $nameParts[0] ?? $user->name,
             'last_name' => $nameParts[1] ?? $nameParts[0] ?? $user->name,
+            'phone' => $this->resolvePhone($user),
         ];
-
-        if ($phone = $this->normalizePhone($user->phone)) {
-            $payload['phone'] = $phone;
-        }
 
         $response = $this->client()->put('/customer/'.$customerCode, $payload);
 
@@ -122,6 +112,11 @@ class PaystackService
         $response = $this->client()->post('/dedicated_account', $payload);
 
         return $this->decode($response->json(), 'Could not create Paystack dedicated account.');
+    }
+
+    private function resolvePhone(User $user): string
+    {
+        return $this->normalizePhone($user->phone) ?? '+234800000'.str_pad((string) $user->id, 6, '0', STR_PAD_LEFT);
     }
 
     private function normalizePhone(?string $phone): ?string
