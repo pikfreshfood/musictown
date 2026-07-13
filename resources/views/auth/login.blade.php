@@ -84,13 +84,10 @@
                     </span>
                 </label>
 
-                <div class="form-row">
-                    <label class="check-field">
-                        <input type="checkbox" name="remember">
-                        <span>Remember me</span>
-                    </label>
-                    <a href="#">Forgot password?</a>
-                </div>
+                <label class="check-field">
+                    <input type="checkbox" name="remember">
+                    <span>Remember me</span>
+                </label>
 
                 <button class="button auth-submit" type="submit">Login</button>
 

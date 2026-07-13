@@ -8,23 +8,14 @@
         ['title' => 'Laho (Remix)', 'artist' => 'Shallipopi Ft. Burna Boy'],
     ];
 
-    $features = [
-        'Streaming hub',
-        'Music Promotion',
-        'Artist Collaboration',
-        'Curated Playlists',
-        'Monetized Streaming',
-        'Music Insights',
-    ];
-
     $faqs = [
-        ['question' => 'How do I register on Music Town?', 'answer' => 'Joining Music Town is easy. Simply contact one of our verified subscription merchants to purchase N-coin for registration.'],
-        ['question' => 'Do I need a referral to get paid?', 'answer' => 'No, you do not need to refer anyone to get paid on Music Town.'],
-        ['question' => 'How will I receive my streaming revenues?', 'answer' => 'Streaming revenues can be received via bank transfer, USDT wallet, or PayPal.'],
+        ['question' => 'How do I register on Music Town?', 'answer' => 'Joining Music Town is easy. Simply create an account with your email and start streaming.'],
+        ['question' => 'Do I need a referral to get paid?', 'answer' => 'No, you do not need to refer anyone to get paid on Music Town. Referral rewards are a bonus.'],
+        ['question' => 'How will I receive my streaming revenues?', 'answer' => 'Streaming revenues can be received via bank transfer directly to your Nigerian bank account.'],
         ['question' => 'How can I start streaming music?', 'answer' => 'You can start streaming music as soon as you register.'],
-        ['question' => 'What subscription plans do you offer?', 'answer' => 'We offer both basic and premium subscription plans.'],
+        ['question' => 'What tier plans do you offer?', 'answer' => 'We offer Tier 0 (free), Tier 1, Tier 2, and Tier 3 with increasing withdrawal limits.'],
         ['question' => 'What should I do if I am having trouble streaming?', 'answer' => 'If you encounter streaming issues, contact our customer care team for a swift resolution.'],
-        ['question' => 'Can I download songs for offline listening?', 'answer' => 'Yes, with our premium subscription plan, you can download and listen to songs offline.'],
+        ['question' => 'How can I withdraw my earnings?', 'answer' => 'You can withdraw your earnings via bank transfer once your balance reaches a minimum of ₦10,000.'],
         ['question' => 'Can I listen to music on multiple devices?', 'answer' => 'Yes, you can access your Music Town account on different devices.'],
     ];
 @endphp
@@ -57,8 +48,8 @@
         <nav class="site-nav" data-site-nav>
             <a href="#top">HomePage</a>
             <a href="#about">About Us</a>
-            <a href="#songs">Subscription</a>
-            <a href="#terms">Terms</a>
+            <a href="#songs">Songs</a>
+            <a href="#faq">FAQ</a>
             <a href="#contact">Contact</a>
         </nav>
 
@@ -80,7 +71,7 @@
             <div class="hero-content">
                 <p class="eyebrow">01</p>
                 <h1>Daily vibes,<br>daily earnings!</h1>
-                <p>Music Town is a music streaming platform focused on music promotion and listener rewards.</p>
+                <p>Music Town is a music streaming platform where you earn ₦5 for every second you listen.</p>
                 <div class="hero-actions">
                     <a class="button" href="{{ route('signup') }}">Sign Up</a>
                     <a class="button button-ghost" href="#songs">Explore Songs</a>
@@ -141,17 +132,23 @@
 
         <section class="features-section">
             <div class="section-heading">
-                <p class="eyebrow">Our Features</p>
-                <h2>Built for listeners, artists, and promoters.</h2>
+                <p class="eyebrow">How It Works</p>
+                <h2>Listen, earn, withdraw.</h2>
             </div>
 
             <div class="feature-list">
-                @foreach ($features as $feature)
-                    <a href="{{ route('signup') }}">
-                        <span>{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
-                        {{ $feature }}
-                    </a>
-                @endforeach
+                <a href="{{ route('signup') }}">
+                    <span>01</span>
+                    Create your free account
+                </a>
+                <a href="{{ route('signup') }}">
+                    <span>02</span>
+                    Stream songs and earn ₦5 per second
+                </a>
+                <a href="{{ route('signup') }}">
+                    <span>03</span>
+                    Withdraw to your bank account
+                </a>
             </div>
         </section>
 
@@ -160,9 +157,9 @@
                 <img src="https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=1200&q=80" alt="Artist singing into a microphone on stage">
             </div>
             <div class="stream-copy">
-                <p class="eyebrow">Stream. Play. Vibe.</p>
-                <h2>Explore songs. Create playlists. Enjoy music.</h2>
-                <p>Immerse yourself in a world of endless music. Discover songs you love, create personalized playlists, and let the rhythm take over. Whether you are working, relaxing, or on the move, the perfect vibe is just a play away.</p>
+                <p class="eyebrow">Stream. Play. Earn.</p>
+                <h2>Listen to music and earn rewards.</h2>
+                <p>Every second you stream earns you ₦5. Build your balance, upgrade your tier, and withdraw directly to your bank account. Simple, transparent, and rewarding.</p>
                 <a class="button" href="{{ route('signup') }}">Get Started</a>
             </div>
         </section>
@@ -170,17 +167,17 @@
         <section class="stats-section">
             <div>
                 <p class="eyebrow">Music Town</p>
-                <h2>Make your music your world with endless songs and perfect playlists.</h2>
-                <p>Join millions of listeners today!</p>
+                <h2>Your music, your earnings, your way.</h2>
+                <p>Start streaming and earning today!</p>
             </div>
             <div class="stats">
-                <strong>10M+<span>Listeners</span></strong>
-                <strong>500K+<span>Playlists</span></strong>
-                <strong>4.8+<span>Rating</span></strong>
+                <strong>Listen<span>Stream music</span></strong>
+                <strong>Earn<span>Get paid to listen</span></strong>
+                <strong>Withdraw<span>Bank transfer</span></strong>
             </div>
         </section>
 
-        <section class="faq-section" id="terms">
+        <section class="faq-section" id="faq">
             <div class="section-heading">
                 <p class="eyebrow">FAQs</p>
                 <h2>Answers before your first stream.</h2>

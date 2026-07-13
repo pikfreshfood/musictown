@@ -21,12 +21,12 @@
             <div class="auth-copy">
                 <p class="eyebrow">Start listening</p>
                 <h1>Create your music identity.</h1>
-                <p>Join Music Town to stream curated songs, build playlists, discover artists, and unlock listener-focused rewards.</p>
+                <p>Join Music Town to stream songs, earn rewards while listening, and withdraw your earnings.</p>
 
                 <div class="auth-benefits">
-                    <span>Curated playlists</span>
-                    <span>Streaming rewards</span>
-                    <span>Artist discovery</span>
+                    <span>Stream & earn</span>
+                    <span>Instant withdrawal</span>
+                    <span>Referral bonus</span>
                 </div>
             </div>
 
@@ -83,7 +83,7 @@
 
                 <label class="check-field terms-check">
                     <input type="checkbox" name="terms" required>
-                    <span>I agree to the Music Town terms and subscription policy.</span>
+                    <span>I agree to the Music Town terms and conditions.</span>
                 </label>
 
                 <button class="button auth-submit" type="submit">Create Account</button>

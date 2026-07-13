@@ -79,6 +79,21 @@
                     <span style="font-size:0.8rem;color:var(--muted);font-weight:400;">Minimum withdrawal: ₦10,000</span>
                 </label>
 
+                <div class="withdrawal-info">
+                    <span>Balance: <strong>₦{{ number_format($user->balance, 2) }}</strong></span>
+                    @if ($user->tier !== 'tier0')
+                        @php
+                            $remaining = match ($user->tier) {
+                                'tier1' => 1 - $user->withdrawals_used,
+                                'tier2' => 2 - $user->withdrawals_used,
+                                'tier3' => 3 - $user->withdrawals_used,
+                                default => 0,
+                            };
+                        @endphp
+                        <span>Withdrawals left: <strong>{{ max(0, $remaining) }}</strong></span>
+                    @endif
+                </div>
+
                 {{-- Error display --}}
                 <div id="errorMsg" class="form-message error-message" style="display:none;"></div>
 
@@ -474,6 +489,12 @@
             letter-spacing: 1px;
             margin: 0 0 8px;
         }
+        .withdrawal-info {
+            display:flex;justify-content:space-between;align-items:center;
+            background:rgba(12,24,48,0.6);border:1px solid rgba(59,130,246,0.15);
+            border-radius:8px;padding:12px 16px;margin:12px 0;font-size:0.85rem;
+        }
+        .withdrawal-info strong { color:var(--blue-soft); }
         .balance-amount {
             font-size: clamp(2.5rem, 5vw, 4rem);
             font-weight: 800;

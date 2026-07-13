@@ -44,7 +44,7 @@
                     </div>
                     <div class="receipt-row">
                         <span class="receipt-label">Status</span>
-                        <span class="receipt-value receipt-status">Successful</span>
+                        <span class="receipt-value receipt-status">{{ $withdrawal->status === 'approved' ? 'Approved' : 'Pending' }}</span>
                     </div>
                     <div class="receipt-row">
                         <span class="receipt-label">Account No.</span>

@@ -1,7 +1,7 @@
 @extends('layouts.user')
 
-@section('title', 'Premium')
-@section('page-title', 'Premium')
+@section('title', 'Withdrawal')
+@section('page-title', 'Withdrawal')
 
 @section('content')
         <section style="max-width:700px;margin:0 auto;">
