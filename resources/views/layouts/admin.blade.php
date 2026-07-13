@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Admin') - PulseWave</title>
+    <title>@yield('title', 'Admin') - Music Town</title>
+    @include('partials.favicon')
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700,800" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -12,12 +13,12 @@
         body { margin: 0; min-height: 100vh; display: flex; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(72,181,255,0.2); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.2); border-radius: 3px; }
 
         .admin-sidebar {
             width: 250px;
             min-height: 100vh;
-            background: linear-gradient(180deg, #050b1a, #02040a);
+            background: linear-gradient(180deg, #0a1428, #02040a);
             border-right: 1px solid var(--line);
             display: flex;
             flex-direction: column;
@@ -29,7 +30,7 @@
         }
         .sidebar-brand {
             padding: 24px 20px 20px;
-            border-bottom: 1px solid rgba(72,181,255,0.1);
+            border-bottom: 1px solid rgba(59,130,246,0.1);
             display: flex;
             align-items: center;
             gap: 10px;
@@ -38,8 +39,8 @@
         }
         .sidebar-brand .brand-mark {
             align-items: center;
-            background: linear-gradient(135deg, var(--blue), var(--orange));
-            box-shadow: 0 0 24px var(--glow-blue), 0 0 34px var(--glow-orange);
+            background: linear-gradient(135deg, var(--blue), var(--blue-soft));
+            box-shadow: 0 0 24px var(--glow-blue), 0 0 34px var(--glow-blue);
             border-radius: 50%;
             color: white;
             display: inline-flex;
@@ -77,11 +78,11 @@
             transition: background 180ms ease, color 180ms ease;
         }
         .sidebar-nav a:hover {
-            background: rgba(20,118,255,0.1);
+            background: rgba(59,130,246,0.1);
             color: var(--ink);
         }
         .sidebar-nav a.active {
-            background: linear-gradient(135deg, rgba(20,118,255,0.2), rgba(255,122,26,0.1));
+            background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(59,130,246,0.1));
             color: white;
         }
         .sidebar-nav a .icon {
@@ -92,7 +93,7 @@
         }
         .sidebar-nav a .badge {
             margin-left: auto;
-            background: var(--orange);
+            background: var(--blue);
             color: white;
             font-size: 0.7rem;
             font-weight: 800;
@@ -101,7 +102,7 @@
         }
         .sidebar-footer {
             padding: 14px 10px;
-            border-top: 1px solid rgba(72,181,255,0.1);
+            border-top: 1px solid rgba(59,130,246,0.1);
         }
         .sidebar-footer a {
             display: flex;
@@ -125,9 +126,9 @@
             flex: 1;
             min-height: 100vh;
             background:
-                radial-gradient(circle at 15% 8%, rgba(20,118,255,0.12), transparent 28rem),
-                radial-gradient(circle at 85% 20%, rgba(255,122,26,0.1), transparent 24rem),
-                linear-gradient(180deg, #030711 0%, #050a16 48%, #02040a 100%);
+                radial-gradient(circle at 15% 8%, rgba(59,130,246,0.12), transparent 28rem),
+                radial-gradient(circle at 85% 20%, rgba(147,197,253,0.1), transparent 24rem),
+                linear-gradient(180deg, #030711 0%, #0a1428 48%, #02040a 100%);
         }
         .admin-topbar {
             display: flex;
@@ -162,9 +163,9 @@
             margin-bottom: 16px;
         }
         .success-message {
-            background: rgba(72,181,255,0.12);
-            border: 1px solid rgba(72,181,255,0.4);
-            color: #48b5ff;
+            background: rgba(59,130,246,0.12);
+            border: 1px solid rgba(59,130,246,0.4);
+            color: #60a5fa;
         }
         .error-message {
             background: rgba(255,50,50,0.12);
@@ -218,7 +219,7 @@
         }
         .btn:hover { transform: translateY(-1px); }
         .btn-primary {
-            background: linear-gradient(135deg, var(--orange), var(--orange-hot) 48%, var(--blue));
+            background: linear-gradient(135deg, var(--blue), var(--blue-soft) 48%, #1d4ed8);
             color: white;
         }
         .btn-danger {
@@ -230,12 +231,12 @@
             background: rgba(255,50,50,0.3);
         }
         .btn-ghost {
-            background: rgba(72,181,255,0.08);
+            background: rgba(59,130,246,0.08);
             border: 1px solid var(--line);
             color: #dce7f8;
         }
         .btn-ghost:hover {
-            background: rgba(72,181,255,0.15);
+            background: rgba(59,130,246,0.15);
         }
         .btn-green {
             background: linear-gradient(135deg, #2a8f4a, #1e7a3a);
@@ -271,10 +272,10 @@
             font-size: 0.9rem;
         }
         table tr:last-child td { border-bottom: none; }
-        table tr:hover td { background: rgba(20,118,255,0.04); }
+        table tr:hover td { background: rgba(59,130,246,0.04); }
         .input-field {
             background: rgba(2,6,14,0.82);
-            border: 1px solid rgba(72,181,255,0.25);
+            border: 1px solid rgba(59,130,246,0.25);
             border-radius: 8px;
             color: white;
             min-height: 46px;
@@ -284,8 +285,8 @@
             transition: border-color 180ms ease, box-shadow 180ms ease;
         }
         .input-field:focus {
-            border-color: rgba(255,122,26,0.74);
-            box-shadow: 0 0 0 4px rgba(20,118,255,0.16);
+            border-color: rgba(59,130,246,0.74);
+            box-shadow: 0 0 0 4px rgba(59,130,246,0.16);
         }
         label.form-label {
             display: grid;
@@ -307,14 +308,14 @@
             color: #dce7f8; font-size: 0.85rem; font-weight: 700;
             text-decoration: none;
         }
-        .pagination-wrap nav[role="navigation"] a:hover { border-color: rgba(255,122,26,0.6); color: var(--orange); }
+        .pagination-wrap nav[role="navigation"] a:hover { border-color: rgba(59,130,246,0.6); color: var(--blue-soft); }
         .pagination-wrap nav[role="navigation"] span[aria-current="page"] {
-            background: linear-gradient(135deg, var(--blue), var(--orange));
+            background: linear-gradient(135deg, var(--blue), var(--blue-soft));
             border-color: transparent; color: white;
         }
         .sidebar-toggle {
             display: none;
-            background: rgba(72,181,255,0.1);
+            background: rgba(59,130,246,0.1);
             border: 1px solid var(--line);
             border-radius: 8px;
             color: #dce7f8;
@@ -323,7 +324,7 @@
             line-height: 1;
             transition: background 180ms ease;
         }
-        .sidebar-toggle:hover { background: rgba(72,181,255,0.2); }
+        .sidebar-toggle:hover { background: rgba(59,130,246,0.2); }
         .sidebar-toggle span {
             display: block;
             width: 20px;
@@ -360,8 +361,8 @@
 
     <aside class="admin-sidebar" id="admin-sidebar">
         <div class="sidebar-brand">
-            <span class="brand-mark">P</span>
-            <span>PulseWave</span>
+            @include('partials.brand-mark')
+            <span>Music Town</span>
         </div>
         <nav class="sidebar-nav">
             <div class="nav-label">Main</div>

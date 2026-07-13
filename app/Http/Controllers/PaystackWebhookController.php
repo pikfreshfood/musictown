@@ -22,13 +22,11 @@ class PaystackWebhookController extends Controller
             return response('Invalid signature', 401);
         }
 
-        $event = $request->input('event');
-        $data = $request->input('data', []);
-
-        if ($event !== 'charge.success') {
+        if ($request->input('event') !== 'charge.success') {
             return response('Ignored', 200);
         }
 
+        $data = $request->input('data', []);
         $authorization = $data['authorization'] ?? [];
         $channel = $authorization['channel'] ?? $data['channel'] ?? null;
 
@@ -37,11 +35,14 @@ class PaystackWebhookController extends Controller
         }
 
         $reference = $data['reference'] ?? null;
-        $receiverAccount = $authorization['receiver_bank_account_number'] ?? null;
+        $receiverAccount = $authorization['receiver_bank_account_number']
+            ?? $data['receiver_bank_account_number']
+            ?? null;
         $amount = ((int) ($data['amount'] ?? 0)) / 100;
 
         if (!$reference || !$receiverAccount || $amount <= 0) {
             Log::warning('Incomplete Paystack DVA webhook payload.', ['payload' => $data]);
+
             return response('Incomplete payload', 422);
         }
 
@@ -59,6 +60,7 @@ class PaystackWebhookController extends Controller
                     'reference' => $reference,
                     'account_number' => $receiverAccount,
                 ]);
+
                 return;
             }
 

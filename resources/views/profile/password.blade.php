@@ -1,14 +1,14 @@
 @extends('layouts.user')
 
-@section('title', 'Settings')
-@section('page-title', 'Settings')
-@section('meta-description', 'Update your Music Town profile settings.')
+@section('title', 'Change Password')
+@section('page-title', 'Change Password')
+@section('meta-description', 'Change your Music Town account password.')
 
 @section('content')
         <section style="max-width:600px;margin:0 auto;">
             <div class="section-heading">
-                <p class="eyebrow">Profile</p>
-                <h2 style="font-size:1.1rem;">Settings</h2>
+                <p class="eyebrow">Security</p>
+                <h2 style="font-size:1.1rem;">Change Password</h2>
             </div>
 
             @if (session('success'))
@@ -23,25 +23,21 @@
                 </div>
             @endif
 
-            <form class="auth-card" method="POST" action="{{ route('profile.update') }}">
+            <form class="auth-card" method="POST" action="{{ route('profile.password') }}">
                 @csrf
-
                 <label>
-                    Full name
-                    <input type="text" name="name" value="{{ old('name', $user->name) }}" required>
+                    Current password
+                    <input type="password" name="current_password" required>
                 </label>
-
                 <label>
-                    Email address
-                    <input type="email" name="email" value="{{ old('email', $user->email) }}" required>
+                    New password
+                    <input type="password" name="new_password" minlength="6" required>
                 </label>
-
                 <label>
-                    Phone number
-                    <input type="tel" name="phone" value="{{ old('phone', $user->phone) }}" required>
+                    Confirm new password
+                    <input type="password" name="new_password_confirmation" minlength="6" required>
                 </label>
-
-                <button class="button auth-submit" type="submit">Save Changes</button>
+                <button class="button auth-submit" type="submit">Update Password</button>
             </form>
         </section>
 

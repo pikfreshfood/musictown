@@ -1,38 +1,11 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Fund your PulseWave wallet with a dedicated virtual account.">
-    <title>Fund Wallet - PulseWave</title>
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700,800" rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body>
-    <header class="site-header">
-        <a class="brand" href="{{ route('profile') }}" aria-label="PulseWave home">
-            <span class="brand-mark">P</span>
-            <span>PulseWave</span>
-        </a>
-        <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" data-menu-toggle>
-            <span></span><span></span><span></span>
-        </button>
-        <nav class="site-nav" data-site-nav>
-            <a href="{{ route('profile') }}">Dashboard</a>
-            <a href="{{ route('profile.wallet') }}">Wallet</a>
-            <a href="{{ route('profile.settings') }}">Settings</a>
-            <a href="{{ route('profile.withdrawal') }}">Withdrawal</a>
-            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
-        </nav>
-        <div class="auth-links">
-            <span style="color:var(--gold);font-weight:700;">{{ $user->name }}</span>
-        </div>
-    </header>
+@extends('layouts.user')
 
-    <form id="logout-form" method="POST" action="{{ route('logout') }}" style="display:none;">@csrf</form>
+@section('title', 'Fund Wallet')
+@section('page-title', 'Wallet')
+@section('meta-description', 'Fund your Music Town wallet with a dedicated virtual account.')
 
-    <main class="wallet-page">
+@section('content')
+
         <section class="wallet-grid">
             <div class="wallet-panel">
                 <p class="eyebrow">Fund Wallet</p>
@@ -64,22 +37,26 @@
                     <strong id="balance-display">₦{{ number_format($user->balance, 2) }}</strong>
                 </div>
 
+                @if ($accountError)
+                    <div class="form-message error-message" style="margin-top:12px;">{{ $accountError }}</div>
+                @endif
+
                 <div class="account-detail">
                     <span>Bank</span>
-                    <strong>{{ $virtualAccount->bank_name ?: 'Pending bank assignment' }}</strong>
+                    <strong>{{ $virtualAccount?->bank_name ?: 'Pending bank assignment' }}</strong>
                 </div>
 
                 <div class="account-detail">
                     <span>Account Number</span>
                     <div class="copy-row">
-                        <strong id="account-number">{{ $virtualAccount->account_number }}</strong>
+                        <strong id="account-number">{{ $virtualAccount?->account_number ?: '---' }}</strong>
                         <button type="button" id="copy-account">Copy</button>
                     </div>
                 </div>
 
                 <div class="account-detail">
                     <span>Account Name</span>
-                    <strong>{{ $virtualAccount->account_name ?: $user->name }}</strong>
+                    <strong>{{ $virtualAccount?->account_name ?: 'Music Town' }}</strong>
                 </div>
 
                 @if ($pendingFunding)
@@ -98,7 +75,7 @@
         <section class="transactions-section">
             <div class="section-heading">
                 <p class="eyebrow">Wallet Activity</p>
-                <h2>Recent credits.</h2>
+                <h2 style="font-size:1.1rem;">Recent credits.</h2>
             </div>
 
             <div class="transaction-list">
@@ -187,7 +164,7 @@
         .account-card,
         .transactions-section {
             background: linear-gradient(145deg, rgba(12,24,48,0.88), rgba(4,9,18,0.94));
-            border: 1px solid rgba(72,181,255,0.24);
+            border: 1px solid rgba(59,130,246,0.24);
             border-radius: 10px;
             padding: clamp(22px, 4vw, 34px);
             box-shadow: 0 24px 70px rgba(0,0,0,0.36);
@@ -265,10 +242,10 @@
             justify-content: space-between;
         }
         .copy-row button {
-            background: rgba(255,122,26,0.14);
-            border: 1px solid rgba(255,122,26,0.5);
+            background: rgba(59,130,246,0.14);
+            border: 1px solid rgba(59,130,246,0.5);
             border-radius: 8px;
-            color: var(--orange);
+            color: var(--blue-soft);
             cursor: pointer;
             font-weight: 800;
             padding: 8px 12px;
@@ -316,9 +293,9 @@
             color: #7ee7a0;
         }
         .error-message {
-            background: rgba(255, 50, 50, 0.12);
-            border: 1px solid rgba(255, 50, 50, 0.4);
-            color: #ff6b6b;
+            background: rgba(220, 38, 38, 0.12);
+            border: 1px solid rgba(220, 38, 38, 0.4);
+            color: #f87171;
         }
         @media (max-width: 820px) {
             .wallet-grid {
@@ -326,5 +303,4 @@
             }
         }
     </style>
-</body>
-</html>
+@endsection

@@ -19,7 +19,9 @@ class NcoinController extends Controller
             ->latest()
             ->first();
 
-        return view('premium.pay-ncoin', compact('user', 'paymentAccount', 'pendingNcoin'));
+        $telegramUsername = $paymentAccount?->telegram_username;
+
+        return view('premium.pay-ncoin', compact('user', 'paymentAccount', 'pendingNcoin', 'telegramUsername'));
     }
 
     public function submitPayment(Request $request)
@@ -45,6 +47,9 @@ class NcoinController extends Controller
 
     public function submitted()
     {
-        return view('premium.payment-submitted');
+        $paymentAccount = PaymentAccount::where('is_active', true)->first();
+        $telegramUsername = $paymentAccount?->telegram_username;
+
+        return view('premium.payment-submitted', compact('telegramUsername'));
     }
 }

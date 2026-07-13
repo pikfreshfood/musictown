@@ -18,14 +18,14 @@
     ];
 
     $faqs = [
-        ['question' => 'How do I register on PulseWave?', 'answer' => 'Joining PulseWave is easy. Simply contact one of our verified subscription merchants to purchase N-coin for registration.'],
-        ['question' => 'Do I need a referral to get paid?', 'answer' => 'No, you do not need to refer anyone to get paid on PulseWave.'],
+        ['question' => 'How do I register on Music Town?', 'answer' => 'Joining Music Town is easy. Simply contact one of our verified subscription merchants to purchase N-coin for registration.'],
+        ['question' => 'Do I need a referral to get paid?', 'answer' => 'No, you do not need to refer anyone to get paid on Music Town.'],
         ['question' => 'How will I receive my streaming revenues?', 'answer' => 'Streaming revenues can be received via bank transfer, USDT wallet, or PayPal.'],
         ['question' => 'How can I start streaming music?', 'answer' => 'You can start streaming music as soon as you register.'],
         ['question' => 'What subscription plans do you offer?', 'answer' => 'We offer both basic and premium subscription plans.'],
         ['question' => 'What should I do if I am having trouble streaming?', 'answer' => 'If you encounter streaming issues, contact our customer care team for a swift resolution.'],
         ['question' => 'Can I download songs for offline listening?', 'answer' => 'Yes, with our premium subscription plan, you can download and listen to songs offline.'],
-        ['question' => 'Can I listen to music on multiple devices?', 'answer' => 'Yes, you can access your PulseWave account on different devices.'],
+        ['question' => 'Can I listen to music on multiple devices?', 'answer' => 'Yes, you can access your Music Town account on different devices.'],
     ];
 @endphp
 
@@ -34,17 +34,18 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="PulseWave is a music streaming platform focused on music promotion and listener rewards.">
-    <title>PulseWave - Daily vibes, daily earnings</title>
+    <meta name="description" content="Music Town is a music streaming platform focused on music promotion and listener rewards.">
+    <title>Music Town - Daily vibes, daily earnings</title>
+    @include('partials.favicon')
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700,800" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
     <header class="site-header">
-        <a class="brand" href="#top" aria-label="PulseWave home">
-            <span class="brand-mark">P</span>
-            <span>PulseWave</span>
+        <a class="brand" href="#top" aria-label="Music Town home">
+            @include('partials.brand-mark')
+            <span>Music Town</span>
         </a>
 
         <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" data-menu-toggle>
@@ -79,7 +80,7 @@
             <div class="hero-content">
                 <p class="eyebrow">01</p>
                 <h1>Daily vibes,<br>daily earnings!</h1>
-                <p>PulseWave is a music streaming platform focused on music promotion and listener rewards.</p>
+                <p>Music Town is a music streaming platform focused on music promotion and listener rewards.</p>
                 <div class="hero-actions">
                     <a class="button" href="{{ route('signup') }}">Sign Up</a>
                     <a class="button button-ghost" href="#songs">Explore Songs</a>
@@ -92,8 +93,8 @@
                 </div>
                 <div class="track-meta">
                     <p>Now Playing</p>
-                    <strong>Afro Pulse Session</strong>
-                    <small>PulseWave Live Radio</small>
+                    <strong>Music Town Session</strong>
+                    <small>Music Town Live Radio</small>
                 </div>
                 <div class="wave-bars" aria-hidden="true">
                     <span></span>
@@ -107,7 +108,7 @@
                 </div>
             </div>
 
-            <aside class="hero-panel" aria-label="PulseWave highlights">
+            <aside class="hero-panel" aria-label="Music Town highlights">
                 <div>
                     <span>02</span>
                     <strong>Turning playlists into profits</strong>
@@ -168,7 +169,7 @@
 
         <section class="stats-section">
             <div>
-                <p class="eyebrow">PulseWave</p>
+                <p class="eyebrow">Music Town</p>
                 <h2>Make your music your world with endless songs and perfect playlists.</h2>
                 <p>Join millions of listeners today!</p>
             </div>
@@ -203,7 +204,7 @@
         </div>
         <div class="contact-block">
             <p>Get in touch</p>
-            <a href="mailto:hello@pulsewave.test">hello@pulsewave.test</a>
+            <a href="mailto:hello@musictown.test">hello@musictown.test</a>
             <div class="social-links">
                 <a href="https://www.instagram.com" target="_blank" rel="noreferrer">Instagram</a>
                 <a href="{{ route('signup') }}">Signup</a>

@@ -19,11 +19,19 @@ class DatabaseSeeder extends Seeder
             SongSeeder::class,
         ]);
 
-        $admin = \App\Models\User::where('email', 'admin@pulsewave.test')->first();
-        if (!$admin) {
+        $admin = \App\Models\User::where('email', 'admin@musictown.test')->first();
+        if ($admin) {
+            $admin->update([
+                'name' => 'admin',
+                'password' => bcrypt('admin'),
+                'is_admin' => true,
+                'is_premium' => true,
+                'role' => 'super_admin',
+            ]);
+        } else {
             \App\Models\User::create([
                 'name' => 'admin',
-                'email' => 'admin@pulsewave.test',
+                'email' => 'admin@musictown.test',
                 'phone' => '0000000000',
                 'password' => bcrypt('admin'),
                 'balance' => 0,

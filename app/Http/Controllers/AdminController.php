@@ -41,16 +41,15 @@ class AdminController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        $user = User::where('is_admin', true)->first();
+        $username = strtolower($credentials['username']);
+        $user = User::where('is_admin', true)
+            ->where(function ($query) use ($username) {
+                $query->whereRaw('LOWER(name) = ?', [$username])
+                    ->orWhereRaw('LOWER(email) = ?', [$username]);
+            })
+            ->first();
 
-        if (!$user) {
-            return back()->withErrors(['username' => 'Invalid admin credentials.']);
-        }
-
-        $usernameMatch = strtolower($user->name) === strtolower($credentials['username'])
-                      || strtolower($user->email) === strtolower($credentials['username']);
-
-        if (!$usernameMatch || !Hash::check($credentials['password'], $user->password)) {
+        if (!$user || !Hash::check($credentials['password'], $user->password)) {
             return back()->withErrors(['username' => 'Invalid admin credentials.']);
         }
 
@@ -326,6 +325,7 @@ class AdminController extends Controller
             'account_number' => ['required', 'string', 'max:20'],
             'account_name' => ['required', 'string', 'max:255'],
             'ncoin_amount' => ['nullable', 'numeric', 'min:0'],
+            'telegram_username' => ['nullable', 'string', 'max:255'],
         ];
 
         if (!$account) {
@@ -338,6 +338,7 @@ class AdminController extends Controller
                 'account_number' => $validated['account_number'],
                 'account_name' => $validated['account_name'],
                 'ncoin_amount' => $validated['ncoin_amount'] ?? null,
+                'telegram_username' => $validated['telegram_username'] ?? null,
                 'pin' => Hash::make($validated['pin']),
                 'is_active' => true,
             ]);
@@ -355,6 +356,7 @@ class AdminController extends Controller
                 'account_number' => $validated['account_number'],
                 'account_name' => $validated['account_name'],
                 'ncoin_amount' => $validated['ncoin_amount'] ?? $account->ncoin_amount,
+                'telegram_username' => $validated['telegram_username'] ?? $account->telegram_username,
                 'pin' => $account->pin,
                 'is_active' => true,
             ]);

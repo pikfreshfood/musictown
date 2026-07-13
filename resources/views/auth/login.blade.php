@@ -3,32 +3,33 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Log in to PulseWave and continue streaming music.">
-    <title>Login - PulseWave</title>
+    <meta name="description" content="Log in to Music Town and continue streaming music.">
+    <title>Login - Music Town</title>
+    @include('partials.favicon')
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700,800" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
     <main class="auth-page">
-        <a class="brand auth-brand" href="{{ url('/') }}" aria-label="PulseWave home">
-            <span class="brand-mark">P</span>
-            <span>PulseWave</span>
+        <a class="brand auth-brand" href="{{ url('/') }}" aria-label="Music Town home">
+            @include('partials.brand-mark')
+            <span>Music Town</span>
         </a>
 
         <section class="auth-shell">
             <div class="auth-copy">
                 <p class="eyebrow">Welcome back</p>
-                <h1>Resume your soundstream.</h1>
-                <p>Log in to keep your playlists, revenue tracking, and daily music sessions moving in sync.</p>
+                <h1>Welcome back to Music Town.</h1>
+                <p>Log in to continue listening, tracking rewards, and managing your Music Town account.</p>
 
                 <div class="mini-player" aria-label="Featured mix">
                     <div class="disc-art">
                         <span></span>
                     </div>
                     <div>
-                        <small>Featured Mix</small>
-                        <strong>Midnight Afro Wave</strong>
+                        <small>Music Town Mix</small>
+                        <strong>Daily Listening Rewards</strong>
                     </div>
                     <div class="wave-bars" aria-hidden="true">
                         <span></span>
@@ -94,8 +95,8 @@
                 <button class="button auth-submit" type="submit">Login</button>
 
                 <p class="auth-switch">
-                    New to PulseWave?
-                    <a href="{{ route('signup') }}">Create account</a>
+                    New to Music Town?
+                    <a href="{{ route('signup', request()->query()) }}">Create account</a>
                 </p>
             </form>
         </section>

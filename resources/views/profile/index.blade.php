@@ -1,46 +1,26 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Your PulseWave profile – track your balance and listen to music.">
-    <title>Profile - PulseWave</title>
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700,800" rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body>
-    <header class="site-header">
-        <a class="brand" href="{{ route('profile') }}" aria-label="PulseWave home">
-            <span class="brand-mark">P</span>
-            <span>PulseWave</span>
-        </a>
-        <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" data-menu-toggle>
-            <span></span><span></span><span></span>
-        </button>
-        <nav class="site-nav" data-site-nav>
-            <a href="{{ route('profile') }}">Dashboard</a>
-            <a href="{{ route('profile.wallet') }}">Wallet</a>
-            <a href="{{ route('profile.settings') }}">Settings</a>
-            <a href="{{ route('profile.withdrawal') }}">Withdrawal</a>
-            <a href="{{ route('profile.history') }}">History</a>
-            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
-        </nav>
-        <div class="auth-links">
-            <span style="color:var(--gold);font-weight:700;">{{ $user->name }}</span>
-        </div>
-    </header>
+@extends('layouts.user')
 
-    <form id="logout-form" method="POST" action="{{ route('logout') }}" style="display:none;">@csrf</form>
+@section('title', 'Profile')
+@section('page-title', 'Dashboard')
+@section('meta-description', 'Your Music Town profile – track your balance and listen to music.')
 
-    <main style="padding: 120px clamp(20px, 5vw, 72px) 40px;">
+@section('content')
+
         {{-- Balance Card --}}
         <section style="max-width:800px;margin:0 auto 48px;">
             <div class="balance-card">
+                <span class="tier-badge-dash">{{ str_replace('tier', 'Tier ', $user->tier) }}</span>
                 <p class="balance-label">Available Balance</p>
                 <p class="balance-amount" id="balance-display">₦{{ number_format($user->balance, 2) }}</p>
-                <p class="balance-hint">Earn ₦100 every second while listening!</p>
+                <p class="balance-hint">Earn ₦5 while listening!</p>
                 <a class="button withdraw-btn" href="{{ route('profile.withdrawal') }}">Withdraw Funds</a>
+                <p style="margin:16px 0 4px;font-size:0.8rem;color:var(--blue-soft);font-weight:700;">Your Referral Link</p>
+                <div class="ref-link-dash">
+                    <span class="ref-link-text">{{ route('signup', ['ref' => $user->referral_code]) }}</span>
+                    <button class="ref-copy-btn" onclick="copyDashRefLink()" aria-label="Copy referral link">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    </button>
+                </div>
             </div>
         </section>
 
@@ -69,7 +49,7 @@
             <div class="section-heading" style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;">
                 <div>
                     <p class="eyebrow">Music Library</p>
-                    <h2>Listen & earn.</h2>
+                    <h2 style="font-size:1.1rem;">Listen & earn.</h2>
                 </div>
                 <button id="play-all-btn" class="button" style="display:inline-flex;align-items:center;gap:6px;font-size:0.9rem;">
                     <span style="font-size:1.1rem;">&#9654;</span> Play All
@@ -103,7 +83,7 @@
                         </span>
                         <small class="song-duration">{{ $mins }}:{{ str_pad($secs, 2, '0') }}</small>
                         @if ($onCooldown)
-                            <small class="played-tag">Check back in 30 min</small>
+                            <small class="played-tag">Check back in 10 min</small>
                         @endif
                     </div>
                 @endforeach
@@ -115,8 +95,11 @@
                 </div>
             @endif
         </section>
-    </main>
+    </div>
 
+@endsection
+
+ @push('scripts')
      <script>
         let activeInterval = null;
         let sessionEarnings = 0;
@@ -218,7 +201,7 @@
                 });
                 const tickData = await tickRes.json();
                 if (tickRes.ok) {
-                    sessionEarnings += 100;
+                    sessionEarnings += 5;
                     document.getElementById('session-earnings').textContent = '₦' + sessionEarnings;
                     document.getElementById('balance-display').textContent = '₦' + parseFloat(tickData.balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                 }
@@ -322,6 +305,19 @@
 
 
 
+        function copyDashRefLink() {
+            const text = document.querySelector('.ref-link-text')?.textContent?.trim();
+            if (!text) return;
+            navigator.clipboard.writeText(text).then(function() {
+                const btn = document.querySelector('.ref-copy-btn');
+                const orig = btn.innerHTML;
+                btn.innerHTML = '<span style="font-size:0.75rem;">Copied!</span>';
+                setTimeout(function() { btn.innerHTML = orig; }, 2000);
+            }).catch(function() {
+                alert('Press Ctrl+C to copy');
+            });
+        }
+
         document.querySelectorAll('.play-btn:not(.played)').forEach(function(btn) {
             btn.addEventListener('click', async function() {
                 const card = this.closest('.song-card');
@@ -351,14 +347,31 @@
         }
     </script>
 
+
+
     <style>
         .balance-card {
             background: linear-gradient(145deg, rgba(12,24,48,0.88), rgba(4,9,18,0.94));
-            border: 1px solid rgba(72,181,255,0.24);
+            border: 1px solid rgba(59,130,246,0.24);
             border-radius: 12px;
-            box-shadow: 0 28px 90px rgba(0,0,0,0.46), 0 0 48px rgba(20,118,255,0.12);
+            box-shadow: 0 28px 90px rgba(0,0,0,0.46), 0 0 48px rgba(59,130,246,0.12);
             padding: clamp(24px, 4vw, 40px);
             text-align: center;
+            position: relative;
+        }
+        .tier-badge-dash {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(59,130,246,0.15);
+            border: 1px solid rgba(59,130,246,0.3);
+            border-radius: 6px;
+            padding: 3px 10px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         .balance-label {
             color: var(--muted);
@@ -375,14 +388,14 @@
             color: white;
         }
         .balance-hint {
-            color: var(--orange);
+            color: var(--blue-soft);
             font-size: 0.85rem;
             font-weight: 700;
             margin: 12px 0 0;
         }
         .now-playing-inner {
-            background: linear-gradient(145deg, rgba(20,118,255,0.12), rgba(255,122,26,0.08));
-            border: 1px solid rgba(255,184,77,0.42);
+            background: linear-gradient(145deg, rgba(59,130,246,0.12), rgba(147,197,253,0.08));
+            border: 1px solid rgba(147,197,253,0.42);
             border-radius: 8px;
             padding: 16px 24px;
             display: flex;
@@ -393,12 +406,12 @@
         .now-playing-label {
             margin: 0;
             font-size: 0.8rem;
-            color: var(--orange);
+            color: var(--blue-soft);
             font-weight: 800;
             text-transform: uppercase;
         }
         .play-btn {
-            background: linear-gradient(135deg, var(--blue), var(--orange));
+            background: linear-gradient(135deg, var(--blue), var(--blue-soft));
             box-shadow: 0 0 28px var(--glow-blue);
             border: none;
             border-radius: 50%;
@@ -413,7 +426,7 @@
             transform: scale(1.08);
         }
         .play-btn.played {
-            background: var(--green);
+            background: rgba(147,197,253,0.3);
             box-shadow: none;
             cursor: default;
             opacity: 0.5;
@@ -428,7 +441,7 @@
             font-size: 0.8rem;
         }
         .played-tag {
-            color: var(--green);
+            color: var(--blue-soft);
             font-size: 0.75rem;
             font-weight: 700;
         }
@@ -444,13 +457,48 @@
             margin-bottom: 16px;
         }
         .error-message {
-            background: rgba(255, 50, 50, 0.12);
-            border: 1px solid rgba(255, 50, 50, 0.4);
-            color: #ff6b6b;
+            background: rgba(220, 38, 38, 0.12);
+            border: 1px solid rgba(220, 38, 38, 0.4);
+            color: #f87171;
         }
         .withdraw-btn {
             display: inline-flex;
             margin-top: 16px;
+        }
+        .ref-link-dash {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            background: rgba(2,6,14,0.6);
+            border: 1px solid rgba(59,130,246,0.2);
+            border-radius: 8px;
+            padding: 8px 12px;
+            max-width: 100%;
+        }
+        .ref-link-text {
+            flex: 1;
+            font-size: 0.8rem;
+            color: var(--blue-soft);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .ref-copy-btn {
+            background: transparent;
+            border: 1px solid rgba(59,130,246,0.3);
+            border-radius: 6px;
+            color: var(--blue-soft);
+            cursor: pointer;
+            padding: 6px 8px;
+            display: flex;
+            align-items: center;
+            transition: border-color 180ms, color 180ms;
+            flex-shrink: 0;
+        }
+        .ref-copy-btn:hover {
+            border-color: var(--blue);
+            color: white;
         }
         .pagination-wrap {
             margin-top: 32px;
@@ -484,14 +532,13 @@
             text-decoration: none;
         }
         .pagination-wrap nav[role="navigation"] a:hover {
-            border-color: rgba(255, 122, 26, 0.6);
-            color: var(--orange);
+            border-color: rgba(59,130,246,0.6);
+            color: var(--blue-soft);
         }
         .pagination-wrap nav[role="navigation"] span[aria-current="page"] {
-            background: linear-gradient(135deg, var(--blue), var(--orange));
+            background: linear-gradient(135deg, var(--blue), var(--blue-soft));
             border-color: transparent;
             color: white;
         }
     </style>
-</body>
-</html>
+@endpush

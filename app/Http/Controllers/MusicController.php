@@ -17,8 +17,8 @@ class MusicController extends Controller
             ->latest('listened_at')
             ->first();
 
-        if ($lastListen && $lastListen->listened_at->gt(now()->subMinutes(30))) {
-            $minsLeft = 30 - now()->diffInMinutes($lastListen->listened_at);
+        if ($lastListen && $lastListen->listened_at->gt(now()->subMinutes(10))) {
+            $minsLeft = 10 - now()->diffInMinutes($lastListen->listened_at);
             return response()->json([
                 'error' => 'Please check back in ' . $minsLeft . ' min.',
                 'cooldown' => $minsLeft,
@@ -38,7 +38,7 @@ class MusicController extends Controller
     {
         $user = Auth::user();
 
-        $user->increment('balance', 100);
+        $user->increment('balance', 5);
 
         return response()->json([
             'success' => true,

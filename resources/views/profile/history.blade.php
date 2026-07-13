@@ -1,43 +1,14 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Your withdrawal history.">
-    <title>Withdrawal History - PulseWave</title>
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700,800" rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body>
-    <header class="site-header">
-        <a class="brand" href="{{ route('profile') }}" aria-label="PulseWave home">
-            <span class="brand-mark">P</span>
-            <span>PulseWave</span>
-        </a>
-        <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" data-menu-toggle>
-            <span></span><span></span><span></span>
-        </button>
-        <nav class="site-nav" data-site-nav>
-            <a href="{{ route('profile') }}">Dashboard</a>
-            <a href="{{ route('profile.wallet') }}">Wallet</a>
-            <a href="{{ route('profile.settings') }}">Settings</a>
-            <a href="{{ route('profile.withdrawal') }}">Withdrawal</a>
-            <a href="{{ route('profile.history') }}">History</a>
-            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
-        </nav>
-        <div class="auth-links">
-            <span style="color:var(--gold);font-weight:700;">{{ $user->name }}</span>
-        </div>
-    </header>
+@extends('layouts.user')
 
-    <form id="logout-form" method="POST" action="{{ route('logout') }}" style="display:none;">@csrf</form>
+@section('title', 'Withdrawal History')
+@section('page-title', 'History')
+@section('meta-description', 'Your withdrawal history.')
 
-    <main style="padding: 120px clamp(20px, 5vw, 72px) 40px;">
+@section('content')
         <section style="max-width:700px;margin:0 auto;">
             <div class="section-heading">
                 <p class="eyebrow">History</p>
-                <h2>Withdrawal History</h2>
+                <h2 style="font-size:1.1rem;">Withdrawal History</h2>
             </div>
 
             @if ($withdrawals->isNotEmpty())
@@ -72,7 +43,6 @@
                 </div>
             @endif
         </section>
-    </main>
 
     <style>
         .history-item {
@@ -93,5 +63,4 @@
             margin-top: 4px;
         }
     </style>
-</body>
-</html>
+@endsection

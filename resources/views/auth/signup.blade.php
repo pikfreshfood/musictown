@@ -3,24 +3,25 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Create your PulseWave account and start streaming music.">
-    <title>Signup - PulseWave</title>
+    <meta name="description" content="Create your Music Town account and start streaming music.">
+    <title>Signup - Music Town</title>
+    @include('partials.favicon')
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700,800" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
     <main class="auth-page">
-        <a class="brand auth-brand" href="{{ url('/') }}" aria-label="PulseWave home">
-            <span class="brand-mark">P</span>
-            <span>PulseWave</span>
+        <a class="brand auth-brand" href="{{ url('/') }}" aria-label="Music Town home">
+            @include('partials.brand-mark')
+            <span>Music Town</span>
         </a>
 
         <section class="auth-shell">
             <div class="auth-copy">
                 <p class="eyebrow">Start listening</p>
                 <h1>Create your music identity.</h1>
-                <p>Join PulseWave to stream curated songs, build playlists, discover artists, and unlock listener-focused rewards.</p>
+                <p>Join Music Town to stream curated songs, build playlists, discover artists, and unlock listener-focused rewards.</p>
 
                 <div class="auth-benefits">
                     <span>Curated playlists</span>
@@ -31,6 +32,9 @@
 
             <form class="auth-card" method="POST" action="{{ route('signup.submit') }}">
                 @csrf
+                @if ($ref = request()->query('ref'))
+                    <input type="hidden" name="ref" value="{{ $ref }}">
+                @endif
                 <div class="auth-card-heading">
                     <p class="eyebrow">Signup</p>
                     <h2>Open your account</h2>
@@ -59,11 +63,6 @@
                 </label>
 
                 <label>
-                    Phone number
-                    <input type="tel" name="phone" value="{{ old('phone') }}" placeholder="+234 800 000 0000" autocomplete="tel" required>
-                </label>
-
-                <label>
                     Password
                     <span class="password-field">
                         <input type="password" name="password" placeholder="Create password" autocomplete="new-password" required>
@@ -84,7 +83,7 @@
 
                 <label class="check-field terms-check">
                     <input type="checkbox" name="terms" required>
-                    <span>I agree to the PulseWave terms and subscription policy.</span>
+                    <span>I agree to the Music Town terms and subscription policy.</span>
                 </label>
 
                 <button class="button auth-submit" type="submit">Create Account</button>

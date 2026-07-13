@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\PaystackService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class AuthController extends Controller
 {
@@ -14,18 +17,33 @@ class AuthController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email', 'unique:users,email'],
-            'phone' => ['required', 'string', 'max:30'],
             'password' => ['required', 'string', 'min:6'],
             'terms' => ['accepted'],
+            'ref' => ['nullable', 'string', 'exists:users,referral_code'],
         ]);
+
+        $referrerId = null;
+        if ($refCode = $validated['ref'] ?? $request->query('ref')) {
+            $referrer = User::where('referral_code', $refCode)->first();
+            $referrerId = $referrer?->id;
+        }
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'phone' => $validated['phone'],
             'password' => Hash::make($validated['password']),
             'balance' => 0,
+            'referrer_id' => $referrerId,
         ]);
+
+        if ($referrerId) {
+            User::where('id', $referrerId)->increment('balance', 1000);
+        }
+
+        try {
+            app(PaystackService::class)->ensureVirtualAccount($user);
+        } catch (Throwable) {
+        }
 
         Auth::login($user);
 
@@ -52,11 +70,39 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        $isAdmin = Auth::user()?->is_admin;
+
         Auth::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
+        if ($isAdmin) {
+            return redirect()->route('admin.login');
+        }
+
         return redirect('/');
+    }
+
+    public function changePassword(Request $request)
+    {
+        $validated = $request->validate([
+            'current_password' => ['required', 'string'],
+            'new_password' => ['required', 'string', 'min:6', 'confirmed'],
+        ]);
+
+        $user = Auth::user();
+
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => 'Current password is incorrect.',
+            ]);
+        }
+
+        $user->update([
+            'password' => Hash::make($validated['new_password']),
+        ]);
+
+        return redirect()->route('profile.settings')->with('success', 'Password changed successfully.');
     }
 }

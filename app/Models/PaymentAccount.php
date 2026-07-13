@@ -12,6 +12,7 @@ class PaymentAccount extends Model
         'account_name',
         'pin',
         'ncoin_amount',
+        'telegram_username',
         'is_active',
     ];
 

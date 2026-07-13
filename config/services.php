@@ -39,6 +39,7 @@ return [
         'secret_key' => env('PAYSTACK_SECRET_KEY'),
         'public_key' => env('PAYSTACK_PUBLIC_KEY'),
         'dva_bank' => env('PAYSTACK_DVA_BANK', 'test-bank'),
+        'verify_ssl' => env('PAYSTACK_VERIFY_SSL', true),
     ],
 
 ];

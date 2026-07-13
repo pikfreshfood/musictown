@@ -39,6 +39,12 @@
                 <span style="font-size:0.8rem;color:var(--muted);font-weight:400;">Amount users must pay for Ncoin. Leave empty for no fixed price.</span>
             </label>
 
+            <label class="form-label">
+                Telegram username
+                <input type="text" name="telegram_username" value="{{ old('telegram_username', $account->telegram_username ?? '') }}" placeholder="e.g. admin_username" class="input-field">
+                <span style="font-size:0.8rem;color:var(--muted);font-weight:400;">Admin Telegram username for user contact (without @).</span>
+            </label>
+
             @if ($account)
                 <label class="form-label">
                     Current 6-digit PIN

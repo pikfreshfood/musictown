@@ -1,37 +1,9 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Premium - PulseWave</title>
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700,800" rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body>
-    <header class="site-header">
-        <a class="brand" href="{{ route('profile') }}" aria-label="PulseWave home">
-            <span class="brand-mark">P</span>
-            <span>PulseWave</span>
-        </a>
-        <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" data-menu-toggle>
-            <span></span><span></span><span></span>
-        </button>
-        <nav class="site-nav" data-site-nav>
-            <a href="{{ route('profile') }}">Dashboard</a>
-            <a href="{{ route('profile.settings') }}">Settings</a>
-            <a href="{{ route('profile.withdrawal') }}">Withdrawal</a>
-            <a href="{{ route('profile.history') }}">History</a>
-            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
-        </nav>
-        <div class="auth-links">
-            <span style="color:var(--gold);font-weight:700;">{{ $user->name }}</span>
-        </div>
-    </header>
+@extends('layouts.user')
 
-    <form id="logout-form" method="POST" action="{{ route('logout') }}" style="display:none;">@csrf</form>
+@section('title', 'Premium')
+@section('page-title', 'Premium')
 
-    <main style="padding: 120px clamp(20px, 5vw, 72px) 40px;">
+@section('content')
         <section style="max-width:700px;margin:0 auto;">
 
             {{-- Messages --}}
@@ -50,7 +22,7 @@
             {{-- Withdrawal Form --}}
             <div class="section-heading">
                 <p class="eyebrow">Payout</p>
-                <h2>Request withdrawal</h2>
+                <h2 class="small-heading">Request withdrawal</h2>
             </div>
 
             <div class="auth-card" id="withdrawCard">
@@ -61,11 +33,11 @@
                     <input type="text" id="account" maxlength="10" placeholder="10-digit account number" autocomplete="off">
                     <span id="verifyFeedback" style="font-size:0.8rem;color:var(--muted);font-weight:400;"></span>
                     <span id="verifiedBlock" style="display:none;align-items:center;gap:8px;padding:10px 14px;border-radius:40px;background:rgba(72,199,142,0.12);border:1px solid rgba(72,199,142,0.35);font-size:0.85rem;">
-                        &#10003; Verified Payee: <strong id="verifiedAccountName" style="color:#48c78e;"></strong>
+                        &#10003; Verified Payee: <strong id="verifiedAccountName" style="color:#60a5fa;"></strong>
                     </span>
-                    <div id="manualNameWrap" style="display:none;margin-top:8px;padding:10px 14px;border-radius:8px;background:rgba(255,184,77,0.08);border:1px solid rgba(255,184,77,0.3);">
-                        <span style="color:var(--gold);font-size:0.8rem;font-weight:600;display:block;margin-bottom:6px;">&#9432; Could not auto-verify. Enter name manually:</span>
-                        <input type="text" id="manualName" placeholder="Full name as registered with bank" style="width:100%;background:rgba(2,6,14,0.82);border:1px solid rgba(255,184,77,0.3);border-radius:8px;color:white;min-height:44px;padding:0 14px;outline:0;">
+                    <div id="manualNameWrap" style="display:none;margin-top:8px;padding:10px 14px;border-radius:8px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);">
+                        <span style="color:var(--blue-soft);font-size:0.8rem;font-weight:600;display:block;margin-bottom:6px;">&#9432; Could not auto-verify. Enter name manually:</span>
+                        <input type="text" id="manualName" placeholder="Full name as registered with bank" style="width:100%;background:rgba(2,6,14,0.82);border:1px solid rgba(59,130,246,0.3);border-radius:8px;color:white;min-height:44px;padding:0 14px;outline:0;">
                     </div>
                 </label>
 
@@ -93,27 +65,45 @@
                     <span style="font-size:0.8rem;color:var(--muted);font-weight:400;">Minimum withdrawal: ₦10,000</span>
                 </label>
 
-                <label>
-                    Ncoin (premium security code)
-                    <input type="text" id="coin" placeholder="Enter Ncoin code">
-                </label>
+                <div class="withdrawal-info">
+                    <span>Balance: <strong>₦{{ number_format($user->balance, 2) }}</strong></span>
+                    @if ($user->tier !== 'tier0')
+                        @php
+                            $remaining = match ($user->tier) {
+                                'tier1' => 1 - $user->withdrawals_used,
+                                'tier2' => 2 - $user->withdrawals_used,
+                                'tier3' => 3 - $user->withdrawals_used,
+                                default => 0,
+                            };
+                        @endphp
+                        <span>Withdrawals left: <strong>{{ max(0, $remaining) }}</strong></span>
+                    @endif
+                </div>
 
                 <div id="errorMsg" class="form-message error-message" style="display:none;"></div>
 
-                <div style="display:flex;gap:12px;margin-top:4px;">
-                    <a href="{{ route('premium.pay-ncoin') }}" class="button auth-submit" id="purchaseNcoin" style="flex:1;background:linear-gradient(135deg,#1a5c2e,#2b7a3e);text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;">&#x21bb; Purchase Ncoin</a>
-                    <button class="button auth-submit" id="withdrawBtn" type="button" style="flex:1;">Withdraw</button>
+                <div style="margin-top:4px;">
+                    <button class="button auth-submit" id="withdrawBtn" type="button" style="width:100%;">Withdraw</button>
                 </div>
             </div>
 
-
+        {{-- Upgrade Modal --}}
+        <div id="upgrade-modal" class="modal-overlay">
+            <div class="modal-box">
+                <h3>Upgrade Required</h3>
+                <p>Your current account tier does not support withdrawals. Please upgrade to Tier 1 or higher to withdraw.</p>
+                <div class="modal-actions">
+                    <button class="button btn-outline" onclick="hideUpgradeModal()" style="flex:1;">Cancel</button>
+                    <a class="button" href="{{ route('profile.upgrade.form') }}" style="flex:1;text-decoration:none;text-align:center;">Continue to Upgrade</a>
+                </div>
+            </div>
+        </div>
 
         </section>
-    </main>
 
     <script>
         // ---------- CONFIG ----------
-        const API_BANKS_URL = "https://nubapi.com/bank-json";
+        const API_BANKS_URL = "{{ route('banks') }}";
 
         let banksData = [];
         let selectedBankObj = null;
@@ -127,7 +117,6 @@
 
         const accountInput = document.getElementById('account');
         const amountInput = document.getElementById('amount');
-        const coinInput = document.getElementById('coin');
         const withdrawBtn = document.getElementById('withdrawBtn');
         const errorDiv = document.getElementById('errorMsg');
         const verifiedBlock = document.getElementById('verifiedBlock');
@@ -225,7 +214,10 @@
 
         async function fetchBanksAndRender() {
             try {
-                var response = await fetch(API_BANKS_URL);
+                var response = await fetch(API_BANKS_URL, {
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (!response.ok) throw new Error('Could not load banks');
                 var data = await response.json();
                 if (Array.isArray(data) && data.length > 0) {
                     banksData = data.sort(function(a, b) { return a.name.localeCompare(b.name); });
@@ -369,20 +361,31 @@
             }
         });
 
+        const userTier = '{{ $user->tier }}';
+
+        function showUpgradeModal() {
+            document.getElementById('upgrade-modal').classList.add('show');
+        }
+        function hideUpgradeModal() {
+            document.getElementById('upgrade-modal').classList.remove('show');
+        }
+
         document.getElementById('withdrawBtn').addEventListener('click', async function() {
             clearError();
 
             var account = accountInput.value.trim();
             var bankName = selectedBankObj ? selectedBankObj.name : '';
             var amount = parseFloat(amountInput.value.trim());
-            var coin = coinInput.value.trim();
-
             if (!account || account.length !== 10) { showError('Valid 10-digit account number required.'); return; }
             if (!selectedBankObj) { showError('Please select a bank.'); return; }
             if (isNaN(amount) || amount < 10000) { showError('Minimum withdrawal is ₦10,000.'); return; }
             if (amount > balance) { showError('Insufficient balance.'); return; }
             if (!verifiedAccountName || verifiedAccountName.trim() === '') { showError('Account verification required.'); return; }
-            if (!coin || coin.trim() === '') { showError('Ncoin code is required.'); return; }
+
+            if (userTier === 'tier0') {
+                showUpgradeModal();
+                return;
+            }
 
             try {
                 var res = await fetch(withdrawRoute, {
@@ -393,14 +396,17 @@
                         account_number: account,
                         account_name: verifiedAccountName,
                         amount: amount,
-                        ncoin: coin
                     })
                 });
 
                 var data = await res.json();
 
                 if (res.ok) {
-                    location.reload();
+                    if (data.receipt_url) {
+                        window.location.href = data.receipt_url;
+                    } else {
+                        location.reload();
+                    }
                 } else {
                     showError(data.error || data.message || 'Withdrawal failed.');
                 }
@@ -415,9 +421,9 @@
     <style>
         .balance-card {
             background: linear-gradient(145deg, rgba(12,24,48,0.88), rgba(4,9,18,0.94));
-            border: 1px solid rgba(72,181,255,0.24);
+            border: 1px solid rgba(59,130,246,0.24);
             border-radius: 12px;
-            box-shadow: 0 28px 90px rgba(0,0,0,0.46), 0 0 48px rgba(20,118,255,0.12);
+            box-shadow: 0 28px 90px rgba(0,0,0,0.46), 0 0 48px rgba(59,130,246,0.12);
             padding: clamp(24px, 4vw, 40px);
             text-align: center;
         }
@@ -429,6 +435,12 @@
             letter-spacing: 1px;
             margin: 0 0 8px;
         }
+        .withdrawal-info {
+            display:flex;justify-content:space-between;align-items:center;
+            background:rgba(12,24,48,0.6);border:1px solid rgba(59,130,246,0.15);
+            border-radius:8px;padding:12px 16px;margin:12px 0;font-size:0.85rem;
+        }
+        .withdrawal-info strong { color:var(--blue-soft); }
         .balance-amount {
             font-size: clamp(2.5rem, 5vw, 4rem);
             font-weight: 800;
@@ -437,9 +449,9 @@
         }
         .auth-card {
             background: linear-gradient(145deg, rgba(12,24,48,0.88), rgba(4,9,18,0.94));
-            border: 1px solid rgba(72,181,255,0.24);
+            border: 1px solid rgba(59,130,246,0.24);
             border-radius: 8px;
-            box-shadow: 0 28px 90px rgba(0,0,0,0.46), 0 0 48px rgba(20,118,255,0.12);
+            box-shadow: 0 28px 90px rgba(0,0,0,0.46), 0 0 48px rgba(59,130,246,0.12);
             display: grid;
             gap: 18px;
             padding: clamp(22px, 4vw, 34px);
@@ -453,7 +465,7 @@
         }
         .auth-card input {
             background: rgba(2, 6, 14, 0.82);
-            border: 1px solid rgba(72, 181, 255, 0.25);
+            border: 1px solid rgba(59, 130, 246, 0.25);
             border-radius: 8px;
             color: white;
             min-height: 52px;
@@ -462,8 +474,8 @@
             transition: border-color 180ms ease, box-shadow 180ms ease;
         }
         .auth-card input:focus {
-            border-color: rgba(255, 122, 26, 0.74);
-            box-shadow: 0 0 0 4px rgba(20, 118, 255, 0.16);
+            border-color: rgba(59, 130, 246, 0.74);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.16);
         }
         .auth-submit {
             border: 0;
@@ -479,9 +491,9 @@
             margin-bottom: 16px;
         }
         .success-message {
-            background: rgba(72, 181, 255, 0.12);
-            border: 1px solid rgba(72, 181, 255, 0.4);
-            color: #48b5ff;
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            color: #60a5fa;
         }
         .error-message p { margin: 0; }
         .error-message p + p { margin-top: 6px; }
@@ -499,7 +511,7 @@
         .custom-select-container { position: relative; width: 100%; }
         .custom-select-trigger {
             background: rgba(2, 6, 14, 0.82);
-            border: 1px solid rgba(72, 181, 255, 0.25);
+            border: 1px solid rgba(59, 130, 246, 0.25);
             border-radius: 8px;
             color: white;
             min-height: 52px;
@@ -513,7 +525,7 @@
         }
         .custom-select-trigger.active,
         .custom-select-trigger:hover {
-            border-color: rgba(255, 122, 26, 0.74);
+            border-color: rgba(59, 130, 246, 0.74);
         }
         .custom-select-trigger .chevron { transition: transform 0.2s; }
         .custom-options {
@@ -522,7 +534,7 @@
             left: 0;
             right: 0;
             background: rgba(6, 14, 30, 0.98);
-            border: 1px solid rgba(72, 181, 255, 0.3);
+            border: 1px solid rgba(59, 130, 246, 0.3);
             border-radius: 12px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.6);
             max-height: 280px;
@@ -533,7 +545,7 @@
         .custom-options.active { display: block; }
         .search-box {
             padding: 12px;
-            border-bottom: 1px solid rgba(72,181,255,0.15);
+            border-bottom: 1px solid rgba(59,130,246,0.15);
             position: sticky;
             top: 0;
             background: rgba(6, 14, 30, 0.98);
@@ -543,13 +555,13 @@
             width: 100%;
             padding: 10px 14px;
             border-radius: 40px;
-            border: 1px solid rgba(72,181,255,0.25);
+            border: 1px solid rgba(59,130,246,0.25);
             font-size: 14px;
             background: rgba(2,6,14,0.82);
             color: white;
         }
         .search-box input:focus {
-            border-color: rgba(255, 122, 26, 0.74);
+            border-color: rgba(59, 130, 246, 0.74);
             outline: none;
         }
         .option {
@@ -559,22 +571,75 @@
             align-items: center;
             gap: 12px;
             transition: background 0.1s;
-            border-bottom: 1px solid rgba(72,181,255,0.06);
+            border-bottom: 1px solid rgba(59,130,246,0.06);
         }
-        .option:hover { background: rgba(20,118,255,0.08); }
+        .option:hover { background: rgba(59,130,246,0.08); }
         .bank-logo {
             width: 36px;
             height: 36px;
-            background: rgba(90,3,78,0.6);
+            background: rgba(59,130,246,0.2);
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            color: #d4a0ff;
+            color: #93c5fd;
             font-size: 13px;
             flex-shrink: 0;
         }
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.show {
+            display: flex;
+        }
+        .modal-box {
+            background: linear-gradient(145deg, rgba(12,24,48,0.98), rgba(4,9,18,0.98));
+            border: 1px solid rgba(59,130,246,0.3);
+            border-radius: 14px;
+            padding: 32px;
+            max-width: 440px;
+            width: 100%;
+            text-align: center;
+        }
+        .modal-box h3 {
+            margin: 0 0 12px;
+            font-size: 1.3rem;
+        }
+        .modal-box p {
+            color: var(--muted);
+            margin: 0 0 24px;
+            line-height: 1.5;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+        }
+        .modal-actions .btn-outline {
+            background: transparent !important;
+            border: 1px solid rgba(59,130,246,0.4) !important;
+            color: var(--blue-soft) !important;
+            cursor: pointer;
+        }
+        .modal-actions .btn-outline:hover {
+            background: rgba(59,130,246,0.1) !important;
+            border-color: var(--blue) !important;
+            color: white !important;
+        }
+        .modal-actions .button {
+            border: 0;
+            cursor: pointer;
+            padding: 12px 20px;
+            font-weight: 700;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
     </style>
-</body>
-</html>
+@endsection

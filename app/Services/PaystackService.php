@@ -6,42 +6,67 @@ use App\Models\PaystackVirtualAccount;
 use App\Models\User;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 class PaystackService
 {
     private string $baseUrl = 'https://api.paystack.co';
 
-    public function ensureVirtualAccount(User $user): PaystackVirtualAccount
+    public function ensureVirtualAccount(User $user, bool $forceNew = false): PaystackVirtualAccount
     {
         $existing = $user->paystackVirtualAccount;
 
-        if ($existing && $existing->account_number) {
+        if ($existing && $existing->account_number && !$forceNew) {
             return $existing;
         }
 
-        $customer = $this->createCustomer($user);
+        if ($existing && $existing->account_number && !$existing->assigned) {
+            try {
+                $requery = $this->requeryDedicatedAccount($existing);
+                return $this->persistVirtualAccount($user, ['customer_code' => $existing->customer_code], $requery, $existing);
+            } catch (RuntimeException $exception) {
+            }
+        }
+
+        $customer = $existing?->customer_code
+            ? $this->updateCustomer($existing->customer_code, $user)
+            : $this->createCustomer($user);
+
+        if (empty($customer['phone']) && $this->normalizePhone($user->phone)) {
+            $customer = $this->updateCustomer($customer['customer_code'], $user);
+        }
+
         $account = $this->createDedicatedAccount($customer['customer_code']);
 
+        return $this->persistVirtualAccount($user, $customer, $account, $existing);
+    }
+
+    private function persistVirtualAccount(User $user, array $customer, array $account, ?PaystackVirtualAccount $existing = null): PaystackVirtualAccount
+    {
         return PaystackVirtualAccount::updateOrCreate(
             ['user_id' => $user->id],
             [
-                'customer_code' => $customer['customer_code'],
-                'dedicated_account_id' => $account['id'] ?? null,
-                'bank_name' => $account['bank']['name'] ?? null,
-                'bank_slug' => $account['bank']['slug'] ?? null,
-                'account_number' => $account['account_number'],
-                'account_name' => $account['account_name'] ?? null,
-                'currency' => $account['currency'] ?? 'NGN',
-                'active' => (bool) ($account['active'] ?? true),
-                'assigned' => (bool) ($account['assigned'] ?? false),
-                'raw_payload' => $account,
+                'customer_code' => $customer['customer_code'] ?? $existing?->customer_code,
+                'dedicated_account_id' => $account['id'] ?? $existing?->dedicated_account_id,
+                'bank_name' => $account['bank']['name'] ?? $existing?->bank_name,
+                'bank_slug' => $account['bank']['slug'] ?? $existing?->bank_slug,
+                'account_number' => $account['account_number'] ?? $existing?->account_number,
+                'account_name' => $account['account_name'] ?? $existing?->account_name,
+                'currency' => $account['currency'] ?? $existing?->currency ?? 'NGN',
+                'active' => (bool) ($account['active'] ?? $existing?->active ?? true),
+                'assigned' => (bool) ($account['assigned'] ?? $existing?->assigned ?? false),
+                'raw_payload' => $account ?: $existing?->raw_payload,
             ]
         );
     }
 
     public function requeryDedicatedAccount(PaystackVirtualAccount $account): array
     {
+        if (!$account->account_number || !$account->bank_slug) {
+            return [];
+        }
+
         $response = $this->client()->get('/dedicated_account/requery', [
             'account_number' => $account->account_number,
             'provider_slug' => $account->bank_slug,
@@ -54,15 +79,36 @@ class PaystackService
     private function createCustomer(User $user): array
     {
         $nameParts = preg_split('/\s+/', trim($user->name), 2);
-
-        $response = $this->client()->post('/customer', [
+        $payload = [
             'email' => $user->email,
             'first_name' => $nameParts[0] ?? $user->name,
             'last_name' => $nameParts[1] ?? $nameParts[0] ?? $user->name,
-            'phone' => $user->phone,
-        ]);
+        ];
+
+        if ($phone = $this->normalizePhone($user->phone)) {
+            $payload['phone'] = $phone;
+        }
+
+        $response = $this->client()->post('/customer', $payload);
 
         return $this->decode($response->json(), 'Could not create Paystack customer.');
+    }
+
+    private function updateCustomer(string $customerCode, User $user): array
+    {
+        $nameParts = preg_split('/\s+/', trim($user->name), 2);
+        $payload = [
+            'first_name' => $nameParts[0] ?? $user->name,
+            'last_name' => $nameParts[1] ?? $nameParts[0] ?? $user->name,
+        ];
+
+        if ($phone = $this->normalizePhone($user->phone)) {
+            $payload['phone'] = $phone;
+        }
+
+        $response = $this->client()->put('/customer/'.$customerCode, $payload);
+
+        return $this->decode($response->json(), 'Could not update Paystack customer.');
     }
 
     private function createDedicatedAccount(string $customerCode): array
@@ -78,6 +124,21 @@ class PaystackService
         return $this->decode($response->json(), 'Could not create Paystack dedicated account.');
     }
 
+    private function normalizePhone(?string $phone): ?string
+    {
+        if (!$phone) {
+            return null;
+        }
+
+        $phone = preg_replace('/\s+/', '', $phone);
+
+        if (str_starts_with($phone, '0')) {
+            return '+234'.substr($phone, 1);
+        }
+
+        return $phone;
+    }
+
     private function client(): PendingRequest
     {
         $secretKey = config('services.paystack.secret_key');
@@ -86,16 +147,27 @@ class PaystackService
             throw new RuntimeException('PAYSTACK_SECRET_KEY is not configured.');
         }
 
-        return Http::withToken($secretKey)
+        $request = Http::withToken($secretKey)
             ->acceptJson()
             ->asJson()
             ->baseUrl($this->baseUrl)
             ->timeout(30);
+
+        if (!config('services.paystack.verify_ssl')) {
+            $request = $request->withoutVerifying();
+        }
+
+        return $request;
     }
 
     private function decode(?array $payload, string $fallbackMessage): array
     {
         if (($payload['status'] ?? false) !== true) {
+            Log::error('Paystack API error.', [
+                'payload' => $payload,
+                'fallback_message' => $fallbackMessage,
+            ]);
+
             throw new RuntimeException($payload['message'] ?? $fallbackMessage);
         }
 

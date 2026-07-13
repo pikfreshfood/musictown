@@ -30,9 +30,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/settings', [ProfileController::class, 'settings'])->name('profile.settings');
     Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/profile/withdrawal', [ProfileController::class, 'withdrawal'])->name('profile.withdrawal');
+    Route::get('/banks', [ProfileController::class, 'banks'])->name('banks');
     Route::post('/profile/withdraw', [ProfileController::class, 'withdraw'])->name('profile.withdraw');
+    Route::get('/profile/password', [ProfileController::class, 'passwordForm'])->name('profile.password.form');
+    Route::get('/profile/upgrade', [ProfileController::class, 'upgradeForm'])->name('profile.upgrade.form');
+    Route::post('/profile/upgrade', [ProfileController::class, 'upgrade'])->name('profile.upgrade');
+    Route::post('/profile/upgrade/check', [ProfileController::class, 'checkUpgradePayment'])->name('profile.upgrade.check');
     Route::get('/profile/history', [ProfileController::class, 'history'])->name('profile.history');
+    Route::get('/profile/referrals', [ProfileController::class, 'referrals'])->name('profile.referrals');
+    Route::get('/profile/withdrawal/receipt/{withdrawal}', [ProfileController::class, 'receipt'])->name('profile.withdrawal.receipt');
     Route::post('/verify-account', [ProfileController::class, 'verifyAccount'])->name('verify.account');
+    Route::post('/profile/password', [AuthController::class, 'changePassword'])->name('profile.password');
 
     Route::get('/premium', [PremiumController::class, 'index'])->name('premium.index');
     Route::post('/premium/pay', [PremiumController::class, 'submitPayment'])->name('premium.submit');
