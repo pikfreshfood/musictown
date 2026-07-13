@@ -202,6 +202,19 @@ class AdminController extends Controller
         return redirect()->route('admin.music')->with('success', 'Song deleted successfully.');
     }
 
+    public function deleteAllMusic()
+    {
+        $this->guard();
+        $songs = Song::all();
+        foreach ($songs as $song) {
+            if ($song->audio_url) {
+                Storage::disk('public')->delete($song->audio_url);
+            }
+            $song->delete();
+        }
+        return redirect()->route('admin.music')->with('success', 'All music deleted successfully.');
+    }
+
     private function extractTitleFromFilename($filename)
     {
         $title = str_replace(['_', '-', '.'], ' ', $filename);
