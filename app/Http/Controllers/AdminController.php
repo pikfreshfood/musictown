@@ -80,8 +80,10 @@ class AdminController extends Controller
     {
         $this->guard();
         $q = request('q');
+        $tier = request('tier');
+        $is_premium = request('is_premium');
 
-        $users = User::where('is_admin', false)
+        $usersQuery = User::where('is_admin', false)
             ->with(['referrer', 'referrals', 'paystackVirtualAccount'])
             ->when($q, function ($builder, $term) {
                 $term = trim($term);
@@ -92,11 +94,27 @@ class AdminController extends Controller
                       ->orWhere('referral_code', 'like', "%{$term}%");
                 });
             })
-            ->orderBy('created_at', 'desc')
-            ->paginate(20)
-            ->appends(request()->only('q'));
+            ->when($tier, function ($builder, $t) {
+                $builder->where('tier', $t);
+            })
+            ->when(isset($is_premium) && $is_premium !== '', function ($builder) use ($is_premium) {
+                $builder->where('is_premium', $is_premium ? 1 : 0);
+            });
 
-        return view('admin.pages.users', compact('users', 'q'));
+        $users = $usersQuery->orderBy('created_at', 'desc')
+            ->paginate(20)
+            ->appends(request()->only('q', 'tier', 'is_premium'));
+
+        $tiers = User::whereNotNull('tier')->distinct()->pluck('tier');
+
+        return view('admin.pages.users', compact('users', 'q', 'tier', 'is_premium', 'tiers'));
+    }
+
+    public function showUser($id)
+    {
+        $this->guard();
+        $user = User::with(['referrer', 'referrals.paystackVirtualAccount', 'paystackVirtualAccount'])->findOrFail($id);
+        return view('admin.pages.user-detail', compact('user'));
     }
 
     public function deleteUser($id)

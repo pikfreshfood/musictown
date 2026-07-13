@@ -58,6 +58,7 @@ Route::prefix('admin')->group(function () {
 
         Route::get('/users', [AdminController::class, 'users'])->name('admin.users');
         Route::get('/users/delete/{id}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
+        Route::get('/users/{id}', [AdminController::class, 'showUser'])->name('admin.users.show');
 
         Route::get('/music', [AdminController::class, 'music'])->name('admin.music');
         Route::post('/music/upload', [AdminController::class, 'uploadMusic'])->name('admin.upload.music');
