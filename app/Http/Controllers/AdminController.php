@@ -124,8 +124,30 @@ class AdminController extends Controller
         if ($user->is_admin) {
             return redirect()->route('admin.users')->with('error', 'Cannot delete admin users here.');
         }
+        // Unlink referrals (do not delete referred users)
+        User::where('referrer_id', $user->id)->update(['referrer_id' => null]);
+
+        // Delete related listens, withdrawals, premium & ncoin payments, wallet fundings and transactions
+        $user->listens()->delete();
+        $user->withdrawals()->delete();
+        $user->premiumPayments()->delete();
+        NcoinPayment::where('user_id', $user->id)->delete();
+
+        // Delete paystack virtual account and its related fundings/transactions if present
+        if ($user->paystackVirtualAccount) {
+            $user->paystackVirtualAccount->fundings()->delete();
+            $user->paystackVirtualAccount->transactions()->delete();
+            $user->paystackVirtualAccount->delete();
+        }
+
+        // Delete wallet fundings/transactions directly related to user
+        $user->walletFundings()->delete();
+        $user->walletTransactions()->delete();
+
+        // Finally delete the user
         $user->delete();
-        return redirect()->route('admin.users')->with('success', 'User deleted successfully.');
+
+        return redirect()->route('admin.users')->with('success', 'User and related account information deleted successfully.');
     }
 
     // ─── MUSIC ───
