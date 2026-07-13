@@ -79,8 +79,24 @@ class AdminController extends Controller
     public function users()
     {
         $this->guard();
-        $users = User::where('is_admin', false)->orderBy('created_at', 'desc')->paginate(20);
-        return view('admin.pages.users', compact('users'));
+        $q = request('q');
+
+        $users = User::where('is_admin', false)
+            ->with(['referrer', 'referrals', 'paystackVirtualAccount'])
+            ->when($q, function ($builder, $term) {
+                $term = trim($term);
+                $builder->where(function ($b) use ($term) {
+                    $b->where('name', 'like', "%{$term}%")
+                      ->orWhere('email', 'like', "%{$term}%")
+                      ->orWhere('phone', 'like', "%{$term}%")
+                      ->orWhere('referral_code', 'like', "%{$term}%");
+                });
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(20)
+            ->appends(request()->only('q'));
+
+        return view('admin.pages.users', compact('users', 'q'));
     }
 
     public function deleteUser($id)
