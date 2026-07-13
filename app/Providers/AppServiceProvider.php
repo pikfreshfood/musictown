@@ -26,6 +26,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->ensureSqliteDatabaseIsReady();
         $this->ensureDefaultAdminAccount();
+        $this->ensureStorageSymlink();
     }
 
     private function ensureSqliteDatabaseIsReady(): void
@@ -126,6 +127,24 @@ class AppServiceProvider extends ServiceProvider
             }
         } catch (Throwable) {
             // Keep the app booting if a host has a temporarily unavailable database.
+        }
+    }
+
+    private function ensureStorageSymlink(): void
+    {
+        if ($this->app->runningInConsole()) {
+            return;
+        }
+
+        $target = __DIR__ . '/../../storage/app/public';
+        $link = __DIR__ . '/../../public/storage';
+
+        if (!file_exists($link) && is_dir($target)) {
+            try {
+                symlink($target, $link);
+            } catch (Throwable) {
+                // Silently fail if the host does not support symlinks.
+            }
         }
     }
 }
