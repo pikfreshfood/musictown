@@ -246,9 +246,6 @@
             <a href="<?php echo e(route('profile')); ?>" class="<?php echo e(request()->routeIs('profile') && !request()->routeIs('profile.*') ? 'active' : ''); ?>">
                 <span class="icon">&#9632;</span> Dashboard
             </a>
-            <a href="<?php echo e(route('profile.wallet')); ?>" class="<?php echo e(request()->routeIs('profile.wallet') ? 'active' : ''); ?>">
-                <span class="icon">&#9671;</span> Wallet
-            </a>
             <a href="<?php echo e(route('profile.withdrawal')); ?>" class="<?php echo e(request()->routeIs('profile.withdrawal') ? 'active' : ''); ?>">
                 <span class="icon">&#8611;</span> Withdrawal
             </a>

@@ -67,20 +67,21 @@ Route::prefix('admin')->group(function () {
         Route::post('/sub-admins/create', [AdminController::class, 'createSubAdmin'])->name('admin.sub-admins.create');
         Route::get('/sub-admins/delete/{id}', [AdminController::class, 'deleteSubAdmin'])->name('admin.sub-admins.delete');
 
-        Route::get('/ncoin-payments', [AdminController::class, 'ncoinPayments'])->name('admin.ncoin-payments');
-        Route::get('/ncoin-payments/approve/{payment}', [AdminController::class, 'approveNcoin'])->name('admin.ncoin.approve');
-        Route::get('/ncoin-payments/reject/{payment}', [AdminController::class, 'rejectNcoin'])->name('admin.ncoin.reject');
+        // Finance routes removed per request
+        // Route::get('/ncoin-payments', [AdminController::class, 'ncoinPayments'])->name('admin.ncoin-payments');
+        // Route::get('/ncoin-payments/approve/{payment}', [AdminController::class, 'approveNcoin'])->name('admin.ncoin.approve');
+        // Route::get('/ncoin-payments/reject/{payment}', [AdminController::class, 'rejectNcoin'])->name('admin.ncoin.reject');
 
-        Route::get('/ncoin-codes', [AdminController::class, 'ncoinCodes'])->name('admin.ncoin-codes');
-        Route::post('/ncoin-codes/generate', [AdminController::class, 'generateNcoinCode'])->name('admin.ncoin-codes.generate');
-        Route::get('/ncoin-codes/delete/{id}', [AdminController::class, 'deleteNcoinCode'])->name('admin.ncoin-codes.delete');
+        // Route::get('/ncoin-codes', [AdminController::class, 'ncoinCodes'])->name('admin.ncoin-codes');
+        // Route::post('/ncoin-codes/generate', [AdminController::class, 'generateNcoinCode'])->name('admin.ncoin-codes.generate');
+        // Route::get('/ncoin-codes/delete/{id}', [AdminController::class, 'deleteNcoinCode'])->name('admin.ncoin-codes.delete');
 
-        Route::get('/payments', [AdminController::class, 'payments'])->name('admin.payments');
-        Route::get('/payments/approve/{payment}', [AdminController::class, 'approvePremium'])->name('admin.premium.approve');
-        Route::get('/payments/reject/{payment}', [AdminController::class, 'rejectPremium'])->name('admin.premium.reject');
+        // Route::get('/payments', [AdminController::class, 'payments'])->name('admin.payments');
+        // Route::get('/payments/approve/{payment}', [AdminController::class, 'approvePremium'])->name('admin.premium.approve');
+        // Route::get('/payments/reject/{payment}', [AdminController::class, 'rejectPremium'])->name('admin.premium.reject');
 
-        Route::get('/payment-account', [AdminController::class, 'paymentAccount'])->name('admin.payment-account');
-        Route::post('/payment-account/save', [AdminController::class, 'savePaymentAccount'])->name('admin.payment-account.save');
+        // Route::get('/payment-account', [AdminController::class, 'paymentAccount'])->name('admin.payment-account');
+        // Route::post('/payment-account/save', [AdminController::class, 'savePaymentAccount'])->name('admin.payment-account.save');
 
         Route::get('/settings', [AdminController::class, 'settings'])->name('admin.settings');
         Route::post('/settings/password', [AdminController::class, 'updatePassword'])->name('admin.settings.password');
