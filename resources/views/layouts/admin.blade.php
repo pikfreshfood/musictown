@@ -375,19 +375,7 @@
             <a href="{{ route('admin.music') }}" class="{{ request()->routeIs('admin.music') ? 'active' : '' }}">
                 <span class="icon">&#9835;</span> Music
             </a>
-            <div class="nav-label">Finance</div>
-            <a href="{{ route('admin.payments') }}" class="{{ request()->routeIs('admin.payments') ? 'active' : '' }}">
-                <span class="icon">&#9679;</span> Premium Payments
-            </a>
-            <a href="{{ route('admin.ncoin-payments') }}" class="{{ request()->routeIs('admin.ncoin-payments') ? 'active' : '' }}">
-                <span class="icon">&#9733;</span> Ncoin Payments
-            </a>
-            <a href="{{ route('admin.ncoin-codes') }}" class="{{ request()->routeIs('admin.ncoin-codes') ? 'active' : '' }}">
-                <span class="icon">&#9733;</span> Ncoin Codes
-            </a>
-            <a href="{{ route('admin.payment-account') }}" class="{{ request()->routeIs('admin.payment-account') ? 'active' : '' }}">
-                <span class="icon">&#9671;</span> Payment Account
-            </a>
+            <!-- Finance links removed per request -->
             <div class="nav-label">Administration</div>
             <a href="{{ route('admin.sub-admins') }}" class="{{ request()->routeIs('admin.sub-admins') ? 'active' : '' }}">
                 <span class="icon">&#9737;</span> Sub Admins
