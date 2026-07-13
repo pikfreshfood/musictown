@@ -33,7 +33,7 @@ class PaystackService
             ? $this->updateCustomer($existing->customer_code, $user)
             : $this->createCustomer($user);
 
-        $account = $this->createDedicatedAccount($customer['customer_code']);
+        $account = $this->createDedicatedAccount($customer['customer_code'], $user);
 
         return $this->persistVirtualAccount($user, $customer, $account, $existing);
     }
@@ -101,9 +101,15 @@ class PaystackService
         return $this->decode($response->json(), 'Could not update Paystack customer.');
     }
 
-    private function createDedicatedAccount(string $customerCode): array
+    private function createDedicatedAccount(string $customerCode, User $user): array
     {
-        $payload = ['customer' => $customerCode];
+        $nameParts = preg_split('/\s+/', trim($user->name), 2);
+        $payload = [
+            'customer' => $customerCode,
+            'first_name' => $nameParts[0] ?? $user->name,
+            'last_name' => $nameParts[1] ?? $nameParts[0] ?? $user->name,
+            'phone' => $this->resolvePhone($user),
+        ];
 
         if (config('services.paystack.dva_bank')) {
             $payload['preferred_bank'] = config('services.paystack.dva_bank');

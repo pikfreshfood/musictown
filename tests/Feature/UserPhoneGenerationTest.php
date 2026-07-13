@@ -70,5 +70,12 @@ class UserPhoneGenerationTest extends TestCase
             return $request->url() === 'https://api.paystack.co/customer'
                 && ($request->data()['phone'] ?? null) === '+234'.substr($user->phone, 1);
         });
+
+        Http::assertSent(function ($request) use ($user) {
+            return $request->url() === 'https://api.paystack.co/dedicated_account'
+                && ($request->data()['phone'] ?? null) === '+234'.substr($user->phone, 1)
+                && ($request->data()['first_name'] ?? null) === 'Hidden'
+                && ($request->data()['last_name'] ?? null) === 'Phone User';
+        });
     }
 }
