@@ -246,9 +246,6 @@
             <a href="{{ route('profile') }}" class="{{ request()->routeIs('profile') && !request()->routeIs('profile.*') ? 'active' : '' }}">
                 <span class="icon">&#9632;</span> Dashboard
             </a>
-            <a href="{{ route('profile.wallet') }}" class="{{ request()->routeIs('profile.wallet') ? 'active' : '' }}">
-                <span class="icon">&#9671;</span> Wallet
-            </a>
             <a href="{{ route('profile.withdrawal') }}" class="{{ request()->routeIs('profile.withdrawal') ? 'active' : '' }}">
                 <span class="icon">&#8611;</span> Withdrawal
             </a>

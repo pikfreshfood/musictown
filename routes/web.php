@@ -7,7 +7,6 @@ use App\Http\Controllers\NcoinController;
 use App\Http\Controllers\PaystackWebhookController;
 use App\Http\Controllers\PremiumController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\WalletController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -24,9 +23,6 @@ Route::post('/paystack/webhook', [PaystackWebhookController::class, 'handle'])->
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
-    Route::get('/profile/wallet', [WalletController::class, 'index'])->name('profile.wallet');
-    Route::post('/profile/wallet/fund', [WalletController::class, 'createFunding'])->name('profile.wallet.fund');
-    Route::post('/profile/wallet/check', [WalletController::class, 'checkFunding'])->name('profile.wallet.check');
     Route::get('/profile/settings', [ProfileController::class, 'settings'])->name('profile.settings');
     Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/profile/withdrawal', [ProfileController::class, 'withdrawal'])->name('profile.withdrawal');
