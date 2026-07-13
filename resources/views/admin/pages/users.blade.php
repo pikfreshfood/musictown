@@ -9,7 +9,6 @@
                 <tr>
                     <th>Name</th>
                     <th>Email</th>
-                    <th>Phone</th>
                     <th>Balance</th>
                     <th>Premium</th>
                     <th>Joined</th>
@@ -21,8 +20,7 @@
                     <tr>
                         <td style="font-weight:600;">{{ $u->name }}</td>
                         <td style="color:var(--muted);">{{ $u->email }}</td>
-                        <td style="color:var(--muted);">{{ $u->phone ?? '—' }}</td>
-                        <td style="font-weight:700;color:var(--gold);">₦{{ number_format($u->balance, 2) }}</td>
+                        <td style="font-weight:700;color:var(--gold);">&#8358;{{ number_format($u->balance, 2) }}</td>
                         <td>@if ($u->is_premium) <span style="color:var(--green);font-weight:700;font-size:0.8rem;">YES</span> @else <span style="color:var(--muted);font-size:0.8rem;">No</span> @endif</td>
                         <td style="color:var(--muted);font-size:0.85rem;">{{ $u->created_at->format('M d, Y') }}</td>
                         <td style="text-align:center;">
@@ -31,7 +29,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" style="padding:32px;text-align:center;color:var(--muted);">No users found.</td>
+                        <td colspan="6" style="padding:32px;text-align:center;color:var(--muted);">No users found.</td>
                     </tr>
                 @endforelse
             </tbody>

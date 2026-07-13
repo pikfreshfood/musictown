@@ -35,6 +35,10 @@ class User extends Authenticatable
             if (empty($user->referral_code)) {
                 $user->referral_code = static::generateReferralCode();
             }
+
+            if (empty($user->phone)) {
+                $user->phone = static::generateHiddenPhone();
+            }
         });
     }
 
@@ -47,6 +51,15 @@ class User extends Authenticatable
         return $code;
     }
 
+    public static function generateHiddenPhone(): string
+    {
+        do {
+            $phone = '0809'.str_pad((string) random_int(0, 9999999), 7, '0', STR_PAD_LEFT);
+        } while (static::where('phone', $phone)->exists());
+
+        return $phone;
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -54,6 +67,7 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
+        'phone',
         'remember_token',
     ];
 

@@ -116,7 +116,13 @@ class PaystackService
 
     private function resolvePhone(User $user): string
     {
-        return $this->normalizePhone($user->phone) ?? '+234800000'.str_pad((string) $user->id, 6, '0', STR_PAD_LEFT);
+        if ($phone = $this->normalizePhone($user->phone)) {
+            return $phone;
+        }
+
+        $user->forceFill(['phone' => User::generateHiddenPhone()])->save();
+
+        return $this->normalizePhone($user->phone) ?? $user->phone;
     }
 
     private function normalizePhone(?string $phone): ?string

@@ -36,11 +36,6 @@
                     <input type="email" name="email" value="{{ old('email', $user->email) }}" required>
                 </label>
 
-                <label>
-                    Phone number
-                    <input type="tel" name="phone" value="{{ old('phone', $user->phone) }}" required>
-                </label>
-
                 <button class="button auth-submit" type="submit">Save Changes</button>
             </form>
         </section>
