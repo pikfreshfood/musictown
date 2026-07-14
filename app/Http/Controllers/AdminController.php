@@ -149,9 +149,20 @@ class AdminController extends Controller
             'subject' => ['required', 'string', 'max:191'],
             'message' => ['required', 'string'],
             'recipients_text' => ['nullable', 'string'],
+            'recipients_csv' => ['nullable', 'file', 'mimes:csv,txt', 'max:2048'],
         ]);
 
         $recipients = $this->normalizeRecipientEmails($validated['recipients_text'] ?? '');
+
+        if ($request->hasFile('recipients_csv')) {
+            $recipients = array_merge($recipients, $this->extractEmailsFromCsv($request->file('recipients_csv')));
+        }
+
+        $recipients = collect($recipients)
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
 
         if (empty($recipients)) {
             $recipients = User::where('is_admin', false)
@@ -197,6 +208,30 @@ class AdminController extends Controller
 
         return collect(preg_split('/[\r\n,;]+/', $input))
             ->map(fn ($email) => trim($email))
+            ->filter()
+            ->unique()
+            ->filter(fn ($email) => filter_var($email, FILTER_VALIDATE_EMAIL))
+            ->values()
+            ->all();
+    }
+
+    private function extractEmailsFromCsv($file): array
+    {
+        $emails = [];
+        if (!$file->isValid()) {
+            return $emails;
+        }
+
+        if (($handle = fopen($file->getRealPath(), 'r')) !== false) {
+            while (($row = fgetcsv($handle)) !== false) {
+                foreach ($row as $value) {
+                    $emails[] = trim($value);
+                }
+            }
+            fclose($handle);
+        }
+
+        return collect($emails)
             ->filter()
             ->unique()
             ->filter(fn ($email) => filter_var($email, FILTER_VALIDATE_EMAIL))
