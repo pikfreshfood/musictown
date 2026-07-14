@@ -37,11 +37,15 @@
                         <td style="font-weight:700;color:var(--gold);">&#8358;{{ number_format($u->balance, 2) }}</td>
                         <td>@if ($u->is_premium) <span style="color:var(--green);font-weight:700;font-size:0.8rem;">YES</span> @else <span style="color:var(--muted);font-size:0.8rem;">No</span> @endif</td>
                         <td style="color:var(--muted);font-size:0.85rem;">@if($u->referrer) {{ $u->referrer->name }} ({{ $u->referrer->email }}) @else — @endif</td>
-                        <td style="font-weight:700;color:var(--blue-soft);">{{ $u->referrals->count() }}</td>
+                        <td style="display:flex;align-items:center;gap:8px;">
+                            <span style="font-weight:700;color:var(--blue-soft);">{{ $u->referrals->count() }}</span>
+                            @if($u->referrals->count() > 0)
+                                <a class="btn btn-secondary btn-sm" href="{{ route('admin.users.referrals', $u->id) }}">View</a>
+                            @endif
+                        </td>
                         <td style="color:var(--muted);font-size:0.85rem;">@if($u->paystackVirtualAccount) {{ $u->paystackVirtualAccount->bank_name }} — {{ $u->paystackVirtualAccount->account_number }} ({{ $u->paystackVirtualAccount->account_name }}) @else — @endif</td>
                         <td style="color:var(--muted);font-size:0.85rem;">{{ $u->created_at->format('M d, Y') }}</td>
                         <td style="text-align:center;display:flex;justify-content:center;gap:6px;flex-wrap:wrap;">
-                            <a class="btn btn-secondary btn-sm" href="{{ route('admin.users.referrals', $u->id) }}">View Referrals</a>
                             <a class="btn btn-danger btn-sm" href="{{ route('admin.users.delete', $u->id) }}" onclick="return confirm('Delete user {{ $u->name }}?')">Delete</a>
                         </td>
                     </tr>
