@@ -194,11 +194,46 @@ class AdminController extends Controller
             return $emails;
         }
 
+        // Normalize BOM and encodings.
         $content = preg_replace('/^\xEF\xBB\xBF/', '', $content);
+        if (function_exists('mb_detect_encoding')) {
+            $encoding = mb_detect_encoding($content, ['UTF-8', 'UTF-16LE', 'UTF-16BE', 'ISO-8859-1'], true);
+            if ($encoding && $encoding !== 'UTF-8') {
+                $content = mb_convert_encoding($content, 'UTF-8', $encoding);
+            }
+        }
 
+        $emails = [];
+
+        // First pass: extract all valid email-like values from the raw text.
         preg_match_all('/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/', $content, $matches);
+        if (!empty($matches[0])) {
+            $emails = $matches[0];
+        }
 
-        return collect($matches[0] ?? [])
+        // Second pass: if no emails were found, tokenize by common delimiters and validate.
+        if (empty($emails)) {
+            $normalized = str_replace(["\r\n", "\r", "\t", ',', ';'], "\n", $content);
+            $lines = explode("\n", $normalized);
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if ($line === '') {
+                    continue;
+                }
+                $tokens = preg_split('/[\s,;]+/', $line);
+                foreach ($tokens as $token) {
+                    $token = trim($token, " \t\n\r\0\x0B\"'<>:\/\\");
+                    if (stripos($token, 'mailto:') === 0) {
+                        $token = substr($token, 7);
+                    }
+                    if (filter_var($token, FILTER_VALIDATE_EMAIL)) {
+                        $emails[] = $token;
+                    }
+                }
+            }
+        }
+
+        return collect($emails)
             ->filter()
             ->unique()
             ->values()
