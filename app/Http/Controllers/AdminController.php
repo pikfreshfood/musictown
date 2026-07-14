@@ -117,6 +117,13 @@ class AdminController extends Controller
         return view('admin.pages.user-detail', compact('user'));
     }
 
+    public function userReferrals($id)
+    {
+        $this->guard();
+        $user = User::with(['referrals.paystackVirtualAccount'])->findOrFail($id);
+        return view('admin.pages.user-referrals', compact('user'));
+    }
+
     public function deleteUser($id)
     {
         $this->guard();

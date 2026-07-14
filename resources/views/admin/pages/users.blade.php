@@ -40,7 +40,8 @@
                         <td style="font-weight:700;color:var(--blue-soft);">{{ $u->referrals->count() }}</td>
                         <td style="color:var(--muted);font-size:0.85rem;">@if($u->paystackVirtualAccount) {{ $u->paystackVirtualAccount->bank_name }} — {{ $u->paystackVirtualAccount->account_number }} ({{ $u->paystackVirtualAccount->account_name }}) @else — @endif</td>
                         <td style="color:var(--muted);font-size:0.85rem;">{{ $u->created_at->format('M d, Y') }}</td>
-                        <td style="text-align:center;">
+                        <td style="text-align:center;display:flex;justify-content:center;gap:6px;flex-wrap:wrap;">
+                            <a class="btn btn-secondary btn-sm" href="{{ route('admin.users.referrals', $u->id) }}">View Referrals</a>
                             <a class="btn btn-danger btn-sm" href="{{ route('admin.users.delete', $u->id) }}" onclick="return confirm('Delete user {{ $u->name }}?')">Delete</a>
                         </td>
                     </tr>
