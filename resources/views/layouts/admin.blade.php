@@ -380,9 +380,6 @@
             </a>
             <!-- Finance links removed per request -->
             <div class="nav-label">Administration</div>
-            <a href="{{ route('admin.master-users') }}" class="{{ request()->routeIs('admin.master-users*') ? 'active' : '' }}">
-                <span class="icon">&#9733;</span> Master Users
-            </a>
             <a href="{{ route('admin.sub-admins') }}" class="{{ request()->routeIs('admin.sub-admins') ? 'active' : '' }}">
                 <span class="icon">&#9737;</span> Sub Admins
             </a>

@@ -18,7 +18,6 @@ Route::view('/signup', 'auth.signup')->name('signup');
 
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 Route::post('/signup', [AuthController::class, 'register'])->name('signup.submit');
-Route::get('/ref/{username}', [AuthController::class, 'referralRedirect'])->name('referral.redirect');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::post('/paystack/webhook', [PaystackWebhookController::class, 'handle'])->name('paystack.webhook');
 

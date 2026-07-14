@@ -9,15 +9,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('username', 50)->nullable()->unique()->after('name');
-            $table->boolean('is_master')->default(false)->after('role');
+            $table->dropUnique(['username']);
+        });
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn(['username', 'is_master']);
         });
     }
 
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['username', 'is_master']);
+            $table->string('username', 50)->nullable()->unique()->after('name');
+            $table->boolean('is_master')->default(false)->after('role');
         });
     }
 };
