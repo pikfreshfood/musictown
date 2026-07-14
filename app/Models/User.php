@@ -27,6 +27,8 @@ class User extends Authenticatable
         'referrer_id',
         'tier',
         'withdrawals_used',
+        'username',
+        'is_master',
     ];
 
     protected static function booted(): void

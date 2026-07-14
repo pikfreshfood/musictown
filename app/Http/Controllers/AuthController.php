@@ -50,6 +50,19 @@ class AuthController extends Controller
         return redirect()->route('profile');
     }
 
+    public function referralRedirect($username)
+    {
+        $user = User::where('username', $username)
+            ->where('is_master', true)
+            ->first();
+
+        if (!$user || !$user->referral_code) {
+            return redirect()->route('signup');
+        }
+
+        return redirect()->route('signup', ['ref' => $user->referral_code]);
+    }
+
     public function login(Request $request)
     {
         $validated = $request->validate([

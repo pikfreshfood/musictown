@@ -375,6 +375,9 @@
             <a href="<?php echo e(route('admin.music')); ?>" class="<?php echo e(request()->routeIs('admin.music') ? 'active' : ''); ?>">
                 <span class="icon">&#9835;</span> Music
             </a>
+            <a href="<?php echo e(route('admin.notifications')); ?>" class="<?php echo e(request()->routeIs('admin.notifications') ? 'active' : ''); ?>">
+                <span class="icon">&#9993;</span> Notifications
+            </a>
             <!-- Finance links removed per request -->
             <div class="nav-label">Administration</div>
             <a href="<?php echo e(route('admin.sub-admins')); ?>" class="<?php echo e(request()->routeIs('admin.sub-admins') ? 'active' : ''); ?>">

@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Services\AudiusService;
 use App\Services\JamendoService;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
@@ -542,6 +543,62 @@ class AdminController extends Controller
 
         $admin->delete();
         return redirect()->route('admin.sub-admins')->with('success', 'Sub-admin deleted successfully.');
+    }
+
+    // ─── MASTER USERS ───
+
+    public function masterUsers()
+    {
+        $this->guard();
+        $users = User::where('is_master', true)->latest()->get();
+        return view('admin.pages.master-users', compact('users'));
+    }
+
+    public function createMasterUser(Request $request)
+    {
+        $this->guard();
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'email' => ['required', 'email', 'unique:users,email'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'password' => ['nullable', 'string', 'min:6'],
+            'username' => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_]+$/', 'unique:users,username'],
+        ]);
+
+        $password = $validated['password'] ?? Str::random(10);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+            'password' => Hash::make($password),
+            'username' => $validated['username'],
+            'is_master' => true,
+            'balance' => 0,
+            'referral_code' => strtoupper(Str::random(8)),
+        ]);
+
+        return redirect()->route('admin.master-users.show', $user->id)
+            ->with('success', "Master user created. Password: {$password}");
+    }
+
+    public function showMasterUser($id)
+    {
+        $this->guard();
+        $user = User::findOrFail($id);
+
+        if (!$user->is_master) {
+            return redirect()->route('admin.master-users')->with('error', 'User is not a master user.');
+        }
+
+        $referrals = User::where('referrer_id', $user->id)->latest()->paginate(20);
+        $referralCount = User::where('referrer_id', $user->id)->count();
+        $referralUrl = $user->username
+            ? route('referral.redirect', $user->username)
+            : route('signup', ['ref' => $user->referral_code]);
+
+        return view('admin.pages.master-user-detail', compact('user', 'referrals', 'referralCount', 'referralUrl'));
     }
 
     // ─── PREMIUM PAYMENTS ───

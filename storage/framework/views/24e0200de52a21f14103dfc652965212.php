@@ -1,5 +1,5 @@
-<?php $__env->startSection('title', 'Premium'); ?>
-<?php $__env->startSection('page-title', 'Premium'); ?>
+<?php $__env->startSection('title', 'Withdrawal'); ?>
+<?php $__env->startSection('page-title', 'Withdrawal'); ?>
 
 <?php $__env->startSection('content'); ?>
         <section style="max-width:700px;margin:0 auto;">

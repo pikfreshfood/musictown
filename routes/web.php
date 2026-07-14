@@ -18,6 +18,7 @@ Route::view('/signup', 'auth.signup')->name('signup');
 
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 Route::post('/signup', [AuthController::class, 'register'])->name('signup.submit');
+Route::get('/ref/{username}', [AuthController::class, 'referralRedirect'])->name('referral.redirect');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::post('/paystack/webhook', [PaystackWebhookController::class, 'handle'])->name('paystack.webhook');
 
@@ -93,6 +94,10 @@ Route::prefix('admin')->group(function () {
 
         // Route::get('/payment-account', [AdminController::class, 'paymentAccount'])->name('admin.payment-account');
         // Route::post('/payment-account/save', [AdminController::class, 'savePaymentAccount'])->name('admin.payment-account.save');
+
+        Route::get('/master-users', [AdminController::class, 'masterUsers'])->name('admin.master-users');
+        Route::post('/master-users/create', [AdminController::class, 'createMasterUser'])->name('admin.master-users.create');
+        Route::get('/master-users/{id}', [AdminController::class, 'showMasterUser'])->name('admin.master-users.show');
 
         Route::get('/settings', [AdminController::class, 'settings'])->name('admin.settings');
         Route::post('/settings/password', [AdminController::class, 'updatePassword'])->name('admin.settings.password');
