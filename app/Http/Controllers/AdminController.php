@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
@@ -176,12 +177,13 @@ class AdminController extends Controller
                 $message->subject($validated['subject']);
             });
         } catch (\Exception $exception) {
-            return back()->with('error', 'Failed to send email: ' . $exception->getMessage())->withInput();
-        }
+            Log::error('Failed to send notification email', [
+                'exception' => $exception,
+                'recipients' => $recipients,
+                'subject' => $validated['subject'],
+            ]);
 
-        $failed = Mail::failures();
-        if (!empty($failed)) {
-            return back()->with('error', 'Email could not be delivered to: ' . implode(', ', $failed))->withInput();
+            return back()->with('error', 'Failed to send email: ' . $exception->getMessage())->withInput();
         }
 
         return redirect()->route('admin.notifications')->with('success', 'Promotional email sent to ' . (1 + count($bccRecipients)) . ' recipient(s).');
