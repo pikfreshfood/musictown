@@ -22,10 +22,10 @@
             <label class="form-label">
                 Upload CSV file (required)
                 <input type="file" name="recipients_csv" accept=".csv,text/csv" required class="input-field" style="padding:10px 12px;" />
-                <span style="font-size:0.85rem;color:var(--muted);">One email per line or comma-separated values. The CSV file must include valid email addresses.</span>
+                <span style="font-size:0.85rem;color:var(--muted);">One email per line or comma/semicolon/tab-separated values. The CSV file must include valid email addresses.</span>
             </label>
 
-            <p style="margin:0;color:var(--muted);font-size:0.9rem;">If a CSV file is uploaded, its valid email addresses will be used. Otherwise all non-admin user emails are used.</p>
+            <p style="margin:0;color:var(--muted);font-size:0.9rem;">Valid addresses will be extracted from the uploaded file and used for sending.</p>
 
             <button class="btn btn-primary" type="submit" style="justify-self:start;">Send Notification</button>
         </form>

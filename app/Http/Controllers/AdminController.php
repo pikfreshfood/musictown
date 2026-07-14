@@ -152,8 +152,7 @@ class AdminController extends Controller
         $recipients = $this->extractEmailsFromCsv($request->file('recipients_csv'));
 
         if (empty($recipients)) {
-            $debug = $this->csvDebugInfo($request->file('recipients_csv'));
-            return back()->with('error', 'Uploaded CSV contains no valid email addresses. Parsed rows: ' . implode(' | ', $debug['rows']) . '. Tokens: ' . implode(', ', $debug['tokens']))->withInput();
+            return back()->with('error', 'Uploaded CSV contains no valid email addresses. Please upload a file with one or more valid email addresses.')->withInput();
         }
 
         $fromAddress = config('mail.from.address', 'no-reply@example.com');
@@ -190,94 +189,23 @@ class AdminController extends Controller
             return $emails;
         }
 
-        $handle = fopen($path, 'r');
-        if ($handle === false) {
+        $content = file_get_contents($path);
+        if ($content === false) {
             return $emails;
         }
 
-        $sample = fread($handle, 1024);
-        rewind($handle);
+        $content = preg_replace('/^\xEF\xBB\xBF/', '', $content);
 
-        $delimiter = ',';
-        $delimiterCounts = [
-            ',' => substr_count($sample, ','),
-            ';' => substr_count($sample, ';'),
-            "\t" => substr_count($sample, "\t"),
-        ];
+        preg_match_all('/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/', $content, $matches);
 
-        if ($delimiterCounts[';'] > $delimiterCounts[','] && $delimiterCounts[';'] >= $delimiterCounts["\t"]) {
-            $delimiter = ';';
-        } elseif ($delimiterCounts["\t"] > $delimiterCounts[','] && $delimiterCounts["\t"] >= $delimiterCounts[';']) {
-            $delimiter = "\t";
-        }
-
-        while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
-            if ($row === [null] || $row === false) {
-                continue;
-            }
-
-            if (count($row) === 1) {
-                $value = trim($row[0]);
-                $value = preg_replace('/^\xEF\xBB\xBF/', '', $value);
-
-                if ($value === '') {
-                    continue;
-                }
-
-                if (strpos($value, ',') !== false || strpos($value, ';') !== false || strpos($value, "\t") !== false) {
-                    $parts = preg_split('/[;,\t]+/', $value);
-                } else {
-                    $parts = [$value];
-                }
-            } else {
-                $parts = $row;
-            }
-
-            foreach ($parts as $value) {
-                $value = trim($value, " \t\n\r\0\x0B\"'");
-                if (filter_var($value, FILTER_VALIDATE_EMAIL)) {
-                    $emails[] = $value;
-                }
-            }
-        }
-
-        fclose($handle);
-
-        return collect($emails)
+        return collect($matches[0] ?? [])
             ->filter()
             ->unique()
             ->values()
             ->all();
     }
 
-    private function csvDebugInfo($file): array
-    {
-        $path = $file->getRealPath();
-        $rows = [];
-        $tokens = [];
-
-        if ($path && is_readable($path)) {
-            $content = file_get_contents($path);
-            $rows = preg_split('/[\r\n]+/', trim($content));
-            foreach ($rows as $row) {
-                if ($row === '') {
-                    continue;
-                }
-                $detected = preg_split('/[;,\t]+/', $row);
-                foreach ($detected as $token) {
-                    $tokens[] = trim($token, " \t\n\r\0\x0B\"'");
-                }
-            }
-        }
-
-        return [
-            'rows' => array_filter($rows, fn($row) => $row !== ''),
-            'tokens' => array_filter($tokens, fn($token) => $token !== ''),
-        ];
-    }
-
     public function deleteUser($id)
-    {
         $this->guard();
         $user = User::findOrFail($id);
         if ($user->is_admin) {
