@@ -146,33 +146,13 @@ class AdminController extends Controller
         $validated = $request->validate([
             'subject' => ['required', 'string', 'max:191'],
             'message' => ['required', 'string'],
-            'recipients_csv' => ['nullable', 'file', 'mimes:csv,txt', 'max:2048'],
+            'recipients_csv' => ['required', 'file', 'mimes:csv,txt', 'max:2048'],
         ]);
 
-        $recipients = [];
-
-        if ($request->hasFile('recipients_csv')) {
-            $recipients = $this->extractEmailsFromCsv($request->file('recipients_csv'));
-        }
-
-        $recipients = collect($recipients)
-            ->filter()
-            ->unique()
-            ->values()
-            ->all();
-
-        if (empty($recipients) && !$request->hasFile('recipients_csv')) {
-            $recipients = User::where('is_admin', false)
-                ->whereNotNull('email')
-                ->pluck('email')
-                ->filter()
-                ->unique()
-                ->values()
-                ->all();
-        }
+        $recipients = $this->extractEmailsFromCsv($request->file('recipients_csv'));
 
         if (empty($recipients)) {
-            return back()->with('error', 'No recipient emails found.')->withInput();
+            return back()->with('error', 'Uploaded CSV contains no valid email addresses.')->withInput();
         }
 
         $fromAddress = config('mail.from.address', 'no-reply@example.com');
@@ -204,19 +184,34 @@ class AdminController extends Controller
             return $emails;
         }
 
-        if (($handle = fopen($file->getRealPath(), 'r')) !== false) {
-            while (($row = fgetcsv($handle)) !== false) {
-                foreach ($row as $value) {
-                    $emails[] = trim($value);
+        $path = $file->getRealPath();
+        if (!$path || !is_readable($path)) {
+            return $emails;
+        }
+
+        $content = file_get_contents($path);
+        if ($content === false) {
+            return $emails;
+        }
+
+        $rows = preg_split('/[\r\n]+/', trim($content));
+        foreach ($rows as $row) {
+            if (empty(trim($row))) {
+                continue;
+            }
+
+            $parts = preg_split('/[;,]+/', $row);
+            foreach ($parts as $value) {
+                $value = trim($value, " \t\n\r\0\x0B\"'");
+                if (filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                    $emails[] = $value;
                 }
             }
-            fclose($handle);
         }
 
         return collect($emails)
             ->filter()
             ->unique()
-            ->filter(fn ($email) => filter_var($email, FILTER_VALIDATE_EMAIL))
             ->values()
             ->all();
     }

@@ -5,7 +5,7 @@
 @section('content')
     <div class="admin-card" style="max-width:800px;">
         <p style="font-weight:700;margin:0 0 16px;font-size:1rem;">Notify users by email</p>
-        <p style="margin:0 0 20px;color:var(--muted);">This form sends a single promotional email to all non-admin users. Leave recipients empty to use all extracted user emails.</p>
+        <p style="margin:0 0 20px;color:var(--muted);">Upload a CSV file containing recipient emails. The valid addresses in the file will receive this promotional email.</p>
 
         <form method="POST" action="{{ route('admin.notifications.send') }}" enctype="multipart/form-data" style="display:grid;gap:16px;">
             @csrf
