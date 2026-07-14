@@ -165,6 +165,11 @@ class AdminController extends Controller
             Mail::send('admin.pages.notifications-email', ['messageContent' => $validated['message'], 'subject' => $validated['subject']], function ($message) use ($primaryRecipient, $bccRecipients, $validated, $fromAddress, $fromName) {
                 $message->from($fromAddress, $fromName);
                 $message->to($primaryRecipient);
+
+                if (Auth::user() && filter_var(Auth::user()->email, FILTER_VALIDATE_EMAIL)) {
+                    $message->cc(Auth::user()->email);
+                }
+
                 if (!empty($bccRecipients)) {
                     $message->bcc($bccRecipients);
                 }
@@ -172,6 +177,11 @@ class AdminController extends Controller
             });
         } catch (\Exception $exception) {
             return back()->with('error', 'Failed to send email: ' . $exception->getMessage())->withInput();
+        }
+
+        $failed = Mail::failures();
+        if (!empty($failed)) {
+            return back()->with('error', 'Email could not be delivered to: ' . implode(', ', $failed))->withInput();
         }
 
         return redirect()->route('admin.notifications')->with('success', 'Promotional email sent to ' . (1 + count($bccRecipients)) . ' recipient(s).');
