@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
@@ -122,6 +123,85 @@ class AdminController extends Controller
         $this->guard();
         $user = User::with(['referrals.paystackVirtualAccount'])->findOrFail($id);
         return view('admin.pages.user-referrals', compact('user'));
+    }
+
+    public function notifications()
+    {
+        $this->guard();
+        $recipients = User::where('is_admin', false)
+            ->whereNotNull('email')
+            ->pluck('email')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        $recipientText = implode(', ', $recipients);
+
+        return view('admin.pages.notifications', compact('recipients', 'recipientText'));
+    }
+
+    public function sendNotifications(Request $request)
+    {
+        $this->guard();
+
+        $validated = $request->validate([
+            'subject' => ['required', 'string', 'max:191'],
+            'message' => ['required', 'string'],
+            'recipients_text' => ['nullable', 'string'],
+        ]);
+
+        $recipients = $this->normalizeRecipientEmails($validated['recipients_text'] ?? '');
+
+        if (empty($recipients)) {
+            $recipients = User::where('is_admin', false)
+                ->whereNotNull('email')
+                ->pluck('email')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+        }
+
+        if (empty($recipients)) {
+            return back()->with('error', 'No recipient emails found.')->withInput();
+        }
+
+        $fromAddress = config('mail.from.address', 'no-reply@example.com');
+        $fromName = config('mail.from.name', config('app.name', 'PulseWave'));
+
+        $primaryRecipient = array_shift($recipients);
+        $bccRecipients = $recipients;
+
+        try {
+            Mail::send('admin.pages.notifications-email', ['messageContent' => $validated['message'], 'subject' => $validated['subject']], function ($message) use ($primaryRecipient, $bccRecipients, $validated, $fromAddress, $fromName) {
+                $message->from($fromAddress, $fromName);
+                $message->to($primaryRecipient);
+                if (!empty($bccRecipients)) {
+                    $message->bcc($bccRecipients);
+                }
+                $message->subject($validated['subject']);
+            });
+        } catch (\Exception $exception) {
+            return back()->with('error', 'Failed to send email: ' . $exception->getMessage())->withInput();
+        }
+
+        return redirect()->route('admin.notifications')->with('success', 'Promotional email sent to ' . (1 + count($bccRecipients)) . ' recipient(s).');
+    }
+
+    private function normalizeRecipientEmails(?string $input): array
+    {
+        if (empty(trim($input ?? ''))) {
+            return [];
+        }
+
+        return collect(preg_split('/[\r\n,;]+/', $input))
+            ->map(fn ($email) => trim($email))
+            ->filter()
+            ->unique()
+            ->filter(fn ($email) => filter_var($email, FILTER_VALIDATE_EMAIL))
+            ->values()
+            ->all();
     }
 
     public function deleteUser($id)

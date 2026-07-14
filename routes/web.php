@@ -62,6 +62,8 @@ Route::prefix('admin')->group(function () {
         Route::get('/users/{id}', [AdminController::class, 'showUser'])->name('admin.users.show');
 
         Route::get('/music', [AdminController::class, 'music'])->name('admin.music');
+        Route::get('/notifications', [AdminController::class, 'notifications'])->name('admin.notifications');
+        Route::post('/notifications/send', [AdminController::class, 'sendNotifications'])->name('admin.notifications.send');
         Route::post('/music/upload', [AdminController::class, 'uploadMusic'])->name('admin.upload.music');
         Route::post('/music/delete-all', [AdminController::class, 'deleteAllMusic'])->name('admin.music.delete-all');
         Route::get('/music/delete/{id}', [AdminController::class, 'deleteMusic'])->name('admin.music.delete');

@@ -375,6 +375,9 @@
             <a href="{{ route('admin.music') }}" class="{{ request()->routeIs('admin.music') ? 'active' : '' }}">
                 <span class="icon">&#9835;</span> Music
             </a>
+            <a href="{{ route('admin.notifications') }}" class="{{ request()->routeIs('admin.notifications') ? 'active' : '' }}">
+                <span class="icon">&#9993;</span> Notifications
+            </a>
             <!-- Finance links removed per request -->
             <div class="nav-label">Administration</div>
             <a href="{{ route('admin.sub-admins') }}" class="{{ request()->routeIs('admin.sub-admins') ? 'active' : '' }}">
