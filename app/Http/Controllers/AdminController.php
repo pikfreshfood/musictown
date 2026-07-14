@@ -189,18 +189,33 @@ class AdminController extends Controller
             return $emails;
         }
 
-        $content = file_get_contents($path);
-        if ($content === false) {
+        $handle = fopen($path, 'r');
+        if ($handle === false) {
             return $emails;
         }
 
-        $rows = preg_split('/[\r\n]+/', trim($content));
-        foreach ($rows as $row) {
-            if (empty(trim($row))) {
+        while (($row = fgetcsv($handle, 0, ',')) !== false) {
+            if ($row === [null] || $row === false) {
                 continue;
             }
 
-            $parts = preg_split('/[;,]+/', $row);
+            if (count($row) === 1) {
+                $value = trim($row[0]);
+                $value = preg_replace('/^\xEF\xBB\xBF/', '', $value);
+
+                if ($value === '') {
+                    continue;
+                }
+
+                if (strpos($value, ';') !== false || strpos($value, "\t") !== false) {
+                    $parts = preg_split('/[;,\t]+/', $value);
+                } else {
+                    $parts = [$value];
+                }
+            } else {
+                $parts = $row;
+            }
+
             foreach ($parts as $value) {
                 $value = trim($value, " \t\n\r\0\x0B\"'");
                 if (filter_var($value, FILTER_VALIDATE_EMAIL)) {
@@ -208,6 +223,8 @@ class AdminController extends Controller
                 }
             }
         }
+
+        fclose($handle);
 
         return collect($emails)
             ->filter()
