@@ -663,13 +663,32 @@
         }
 
         @media (max-width: 600px) {
-            .song-card { padding: 6px 8px; gap: 6px; }
-            .play-btn { height: 28px; width: 28px; }
+            .song-card { padding: 8px; gap: 6px; flex-wrap: wrap; }
+            .play-btn { height: 28px; width: 28px; flex-shrink: 0; }
             .play-btn span { border-bottom-width: 6px !important; border-left-width: 8px !important; border-top-width: 6px !important; left: 13px !important; top: 10px !important; }
             .play-btn.played { height: 28px; width: 28px; }
             .play-btn.played span { font-size: 0.75rem; }
-            .song-title { font-size: 0.82rem; }
-            .song-artist { font-size: 0.7rem; }
+            .song-info {
+                flex: 1;
+                min-width: 0;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1px;
+            }
+            .song-title {
+                font-size: 0.82rem;
+                white-space: normal;
+                overflow: visible;
+                text-overflow: clip;
+                line-height: 1.3;
+            }
+            .song-artist {
+                font-size: 0.7rem;
+                white-space: normal;
+                overflow: visible;
+                text-overflow: clip;
+            }
+            .song-thumb { width: 18px; height: 18px; align-self: flex-start; }
             .song-duration { font-size: 0.7rem; }
             .played-tag { font-size: 0.65rem; }
             .download-btn { font-size: 0.8rem; padding: 2px 4px; }
