@@ -20,17 +20,12 @@
             </label>
 
             <label class="form-label">
-                Recipient emails (optional)
-                <textarea name="recipients_text" rows="5" placeholder="Paste email addresses separated by commas, new lines, or semicolons" class="input-field" style="resize:vertical;">{{ old('recipients_text', $recipientText ?? '') }}</textarea>
+                Upload CSV file (required)
+                <input type="file" name="recipients_csv" accept=".csv,text/csv" required class="input-field" style="padding:10px 12px;" />
+                <span style="font-size:0.85rem;color:var(--muted);">One email per line or comma-separated values. The CSV file must include valid email addresses.</span>
             </label>
 
-            <label class="form-label">
-                Upload CSV file (optional)
-                <input type="file" name="recipients_csv" accept=".csv,text/csv" class="input-field" style="padding:10px 12px;" />
-                <span style="font-size:0.85rem;color:var(--muted);">One email per line or comma-separated values. Uploaded CSV addresses are merged with the text field.</span>
-            </label>
-
-            <p style="margin:0;color:var(--muted);font-size:0.9rem;">Detected emails: <strong>{{ count($recipients) }}</strong>. If both fields are empty, all non-admin user emails will be used.</p>
+            <p style="margin:0;color:var(--muted);font-size:0.9rem;">If a CSV file is uploaded, its valid email addresses will be used. Otherwise all non-admin user emails are used.</p>
 
             <button class="btn btn-primary" type="submit" style="justify-self:start;">Send Notification</button>
         </form>

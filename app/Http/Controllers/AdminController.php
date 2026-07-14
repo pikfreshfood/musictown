@@ -136,9 +136,7 @@ class AdminController extends Controller
             ->values()
             ->all();
 
-        $recipientText = implode(', ', $recipients);
-
-        return view('admin.pages.notifications', compact('recipients', 'recipientText'));
+        return view('admin.pages.notifications', compact('recipients'));
     }
 
     public function sendNotifications(Request $request)
@@ -148,14 +146,13 @@ class AdminController extends Controller
         $validated = $request->validate([
             'subject' => ['required', 'string', 'max:191'],
             'message' => ['required', 'string'],
-            'recipients_text' => ['nullable', 'string'],
             'recipients_csv' => ['nullable', 'file', 'mimes:csv,txt', 'max:2048'],
         ]);
 
-        $recipients = $this->normalizeRecipientEmails($validated['recipients_text'] ?? '');
+        $recipients = [];
 
         if ($request->hasFile('recipients_csv')) {
-            $recipients = array_merge($recipients, $this->extractEmailsFromCsv($request->file('recipients_csv')));
+            $recipients = $this->extractEmailsFromCsv($request->file('recipients_csv'));
         }
 
         $recipients = collect($recipients)
@@ -164,7 +161,7 @@ class AdminController extends Controller
             ->values()
             ->all();
 
-        if (empty($recipients)) {
+        if (empty($recipients) && !$request->hasFile('recipients_csv')) {
             $recipients = User::where('is_admin', false)
                 ->whereNotNull('email')
                 ->pluck('email')
@@ -198,21 +195,6 @@ class AdminController extends Controller
         }
 
         return redirect()->route('admin.notifications')->with('success', 'Promotional email sent to ' . (1 + count($bccRecipients)) . ' recipient(s).');
-    }
-
-    private function normalizeRecipientEmails(?string $input): array
-    {
-        if (empty(trim($input ?? ''))) {
-            return [];
-        }
-
-        return collect(preg_split('/[\r\n,;]+/', $input))
-            ->map(fn ($email) => trim($email))
-            ->filter()
-            ->unique()
-            ->filter(fn ($email) => filter_var($email, FILTER_VALIDATE_EMAIL))
-            ->values()
-            ->all();
     }
 
     private function extractEmailsFromCsv($file): array
