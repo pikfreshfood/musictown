@@ -27,13 +27,20 @@ class MusicController extends Controller
             ], 403);
         }
 
+        $song = Song::findOrFail($songId);
+
         Listen::create([
             'user_id' => $user->id,
             'song_id' => $songId,
             'listened_at' => now(),
         ]);
 
-        return response()->json(['success' => true]);
+        $audioUrl = $song->audio_url ? (str_starts_with($song->audio_url, 'http') ? $song->audio_url : asset('storage/' . $song->audio_url)) : '';
+
+        return response()->json([
+            'success' => true,
+            'audio_url' => $audioUrl,
+        ]);
     }
 
     public function loadMore(Request $request)

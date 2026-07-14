@@ -278,6 +278,14 @@
                 sessionEarnings = 0;
                 document.getElementById('session-earnings').textContent = '₦0';
 
+                if (data.audio_url && data.audio_url !== audioUrl) {
+                    card.dataset.audioUrl = data.audio_url;
+                    if (audio) {
+                        audio.src = data.audio_url;
+                        audio.load();
+                    }
+                }
+
                 if (playBtn) {
                     playBtn.style.opacity = '0.5';
                     activePlayBtn = playBtn;
