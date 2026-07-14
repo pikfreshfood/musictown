@@ -381,7 +381,7 @@ class AdminController extends Controller
     {
         $this->guard();
 
-        $keywords = ['nigeria', 'naija', 'afrobeat', 'afropop', 'lagos', 'africa'];
+        $keywords = ['nigeria', 'naija', 'afrobeat', 'afropop', 'lagos', 'africa', 'dj mix nigeria', 'dj mix afrobeat', 'nigeria mix'];
         $total = 0;
 
         foreach ($keywords as $keyword) {
