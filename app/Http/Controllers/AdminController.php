@@ -206,6 +206,7 @@ class AdminController extends Controller
     }
 
     public function deleteUser($id)
+    {
         $this->guard();
         $user = User::findOrFail($id);
         if ($user->is_admin) {
