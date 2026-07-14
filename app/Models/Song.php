@@ -11,6 +11,9 @@ class Song extends Model
         'artist',
         'duration',
         'audio_url',
+        'image_url',
+        'jamendo_id',
+        'audius_id',
     ];
 
     public function listens()

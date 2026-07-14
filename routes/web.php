@@ -47,6 +47,9 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/music/play/{song}', [MusicController::class, 'play']);
     Route::post('/music/tick/{song}', [MusicController::class, 'tick']);
+    Route::get('/music/search', [MusicController::class, 'search'])->name('music.search');
+    Route::get('/music/load-more', [MusicController::class, 'loadMore'])->name('music.load-more');
+    Route::get('/music/download/{song}', [MusicController::class, 'download'])->name('music.download');
 });
 
 Route::prefix('admin')->group(function () {
@@ -62,9 +65,12 @@ Route::prefix('admin')->group(function () {
         Route::get('/users/{id}', [AdminController::class, 'showUser'])->name('admin.users.show');
 
         Route::get('/music', [AdminController::class, 'music'])->name('admin.music');
+        Route::get('/music/load-more', [AdminController::class, 'loadMoreMusic'])->name('admin.music.load-more');
         Route::get('/notifications', [AdminController::class, 'notifications'])->name('admin.notifications');
         Route::post('/notifications/send', [AdminController::class, 'sendNotifications'])->name('admin.notifications.send');
         Route::post('/music/upload', [AdminController::class, 'uploadMusic'])->name('admin.upload.music');
+        Route::post('/music/sync-jamendo', [AdminController::class, 'syncJamendo'])->name('admin.music.sync-jamendo');
+        Route::post('/music/sync-audius', [AdminController::class, 'syncAudius'])->name('admin.music.sync-audius');
         Route::post('/music/delete-all', [AdminController::class, 'deleteAllMusic'])->name('admin.music.delete-all');
         Route::get('/music/delete/{id}', [AdminController::class, 'deleteMusic'])->name('admin.music.delete');
 

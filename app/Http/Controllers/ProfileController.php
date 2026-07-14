@@ -15,17 +15,24 @@ use Throwable;
 
 class ProfileController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
-        $songs = Song::paginate(10);
+        $q = $request->input('q');
+
+        $songs = Song::when($q, function ($query, $search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('artist', 'like', "%{$search}%");
+            });
+        })->paginate(10)->withQueryString();
 
         $listenedRecent = Listen::where('user_id', $user->id)
             ->where('listened_at', '>=', now()->subMinutes(10))
             ->pluck('song_id')
             ->toArray();
 
-        return view('profile.index', compact('user', 'songs', 'listenedRecent'));
+        return view('profile.index', compact('user', 'songs', 'listenedRecent', 'q'));
     }
 
     public function settings()

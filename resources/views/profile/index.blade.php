@@ -51,49 +51,67 @@
                     <p class="eyebrow">Music Library</p>
                     <h2 style="font-size:1.1rem;">Listen & earn.</h2>
                 </div>
-                <button id="play-all-btn" class="button" style="display:inline-flex;align-items:center;gap:6px;font-size:0.9rem;">
-                    <span style="font-size:1.1rem;">&#9654;</span> Play All
-                </button>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <div style="position:relative;">
+                        <form method="GET" action="{{ route('profile') }}" style="display:flex;gap:6px;" id="search-form">
+                            <input type="text" name="q" id="search-input" value="{{ $q ?? '' }}" placeholder="Search songs or artists..." class="input-field" style="min-height:auto;padding:6px 10px;font-size:0.85rem;width:180px;" autocomplete="off">
+                            <button type="submit" class="button" style="font-size:0.85rem;padding:6px 12px;">Search</button>
+                            @if (!empty($q))
+                                <a href="{{ route('profile') }}" class="button" style="font-size:0.85rem;padding:6px 12px;background:transparent;border:1px solid var(--line);">Clear</a>
+                            @endif
+                        </form>
+                        <div id="autocomplete-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0a1428;border:1px solid rgba(59,130,246,0.3);border-radius:8px;margin-top:4px;z-index:50;overflow:hidden;"></div>
+                    </div>
+                    <button id="play-all-btn" class="button" style="display:inline-flex;align-items:center;gap:6px;font-size:0.9rem;">
+                        <span style="font-size:1.1rem;">&#9654;</span> Play All
+                    </button>
+                </div>
             </div>
 
             @if (session('error'))
                 <p class="form-message error-message">{{ session('error') }}</p>
             @endif
 
-            <div style="display:grid;gap:14px;">
-                @foreach ($songs as $song)
+            <div id="song-list" style="display:grid;gap:8px;">
+                @forelse ($songs as $song)
                     @php
                         $mins = intdiv($song->duration, 60);
                         $secs = $song->duration % 60;
                         $onCooldown = in_array($song->id, $listenedRecent);
                     @endphp
-                    <div class="song-card" data-song-id="{{ $song->id }}" data-duration="{{ $song->duration }}" data-audio-url="{{ $song->audio_url ? asset('storage/' . $song->audio_url) : '' }}" style="cursor:default;">
+                    @php $audioUrl = $song->audio_url ? (str_starts_with($song->audio_url, 'http') ? $song->audio_url : asset('storage/' . $song->audio_url)) : ''; @endphp
+                    <div class="song-card" data-song-id="{{ $song->id }}" data-duration="{{ $song->duration }}" data-audio-url="{{ $audioUrl }}">
                         @if ($onCooldown)
                             <div class="play-btn played" aria-label="On cooldown">
-                                <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:white;font-size:1.1rem;">&#9202;</span>
+                                <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:white;font-size:0.9rem;">&#9202;</span>
                             </div>
                         @else
                             <button class="play-btn" data-song-id="{{ $song->id }}" data-title="{{ $song->title }}" data-artist="{{ $song->artist }}" aria-label="Play {{ $song->title }}">
-                                <span style="position:absolute;left:17px;top:13px;border-bottom:8px solid transparent;border-left:12px solid white;border-top:8px solid transparent;"></span>
+                                <span style="position:absolute;left:15px;top:11px;border-bottom:7px solid transparent;border-left:10px solid white;border-top:7px solid transparent;"></span>
                             </button>
                         @endif
-                        <span style="flex:1;">
-                            <strong>{{ $song->title }}</strong>
+                        <span class="song-info">
+                            <strong class="song-title">{{ $song->title }}</strong>
+                            @if ($song->image_url)
+                                <img src="{{ $song->image_url }}" alt="" class="song-thumb">
+                            @endif
                             <small class="song-artist">{{ $song->artist }}</small>
                         </span>
                         <small class="song-duration">{{ $mins }}:{{ str_pad($secs, 2, '0') }}</small>
                         @if ($onCooldown)
-                            <small class="played-tag">Check back in 10 min</small>
+                            <small class="played-tag">10 min</small>
+                        @endif
+                        @if ($song->audio_url)
+                            <a href="{{ route('music.download', $song->id) }}" class="download-btn" title="Download">&#8595;</a>
                         @endif
                     </div>
-                @endforeach
+                @empty
+                    <p style="text-align:center;padding:24px;color:var(--muted);font-size:0.9rem;">No songs found. Try a different search.</p>
+                @endforelse
             </div>
 
-            @if ($songs->hasPages())
-                <div class="pagination-wrap">
-                    {{ $songs->links('pagination::tailwind') }}
-                </div>
-            @endif
+            <div id="scroll-sentinel" style="height:1px;"></div>
+            <div id="scroll-loading" style="display:none;text-align:center;padding:16px;color:var(--muted);font-size:0.85rem;">Loading more songs...</div>
         </section>
     </div>
 
@@ -318,6 +336,140 @@
             });
         }
 
+        // ── Infinite Scroll ──
+        (function() {
+            var sentinel = document.getElementById('scroll-sentinel');
+            var loading = document.getElementById('scroll-loading');
+            var list = document.getElementById('song-list');
+            var page = 2;
+            var loadingMore = false;
+            var hasMore = {{ $songs->hasPages() ? 'true' : 'false' }};
+            var searchQ = '{{ $q ?? '' }}';
+
+            if (!sentinel || !list) return;
+
+            if (!hasMore) {
+                sentinel.style.display = 'none';
+                return;
+            }
+
+            var observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting && hasMore && !loadingMore) {
+                        loadingMore = true;
+                        loading.style.display = 'block';
+
+                        var url = '{{ route('music.load-more') }}?page=' + page;
+                        if (searchQ) url += '&q=' + encodeURIComponent(searchQ);
+
+                        fetch(url)
+                            .then(function(r) { return r.json(); })
+                            .then(function(data) {
+                                if (data.html) {
+                                    list.insertAdjacentHTML('beforeend', data.html);
+                                    attachPlayButtons();
+                                }
+                                hasMore = data.hasMore;
+                                page = data.nextPage;
+                                loadingMore = false;
+                                loading.style.display = 'none';
+                                if (!hasMore) {
+                                    observer.unobserve(sentinel);
+                                    sentinel.style.display = 'none';
+                                }
+                            })
+                            .catch(function() {
+                                loadingMore = false;
+                                loading.style.display = 'none';
+                            });
+                    }
+                });
+            }, { rootMargin: '200px' });
+
+            observer.observe(sentinel);
+
+            function attachPlayButtons() {
+                list.querySelectorAll('.song-card .play-btn:not(.played)').forEach(function(btn) {
+                    if (btn._attached) return;
+                    btn._attached = true;
+                    btn.addEventListener('click', async function() {
+                        var card = this.closest('.song-card');
+                        var result = await playSong(card);
+                        if (result) {
+                            document.getElementById('now-playing-bar').style.display = 'none';
+                            location.reload();
+                        }
+                    });
+                });
+            }
+
+            attachPlayButtons();
+        })();
+
+        // ── Autocomplete Search ──
+        (function() {
+            var input = document.getElementById('search-input');
+            var results = document.getElementById('autocomplete-results');
+            var form = document.getElementById('search-form');
+            var timer = null;
+
+            if (!input || !results) return;
+
+            input.addEventListener('input', function() {
+                clearTimeout(timer);
+                var q = this.value.trim();
+                if (q.length < 1) {
+                    results.style.display = 'none';
+                    results.innerHTML = '';
+                    return;
+                }
+                timer = setTimeout(function() {
+                    fetch('{{ route('music.search') }}?q=' + encodeURIComponent(q))
+                        .then(function(r) { return r.json(); })
+                        .then(function(data) {
+                            if (!data || !data.length) {
+                                results.style.display = 'none';
+                                results.innerHTML = '';
+                                return;
+                            }
+                            var html = '';
+                            data.forEach(function(song) {
+                                var m = Math.floor(song.duration / 60);
+                                var s = song.duration % 60;
+                                var time = m + ':' + (s < 10 ? '0' : '') + s;
+                                html += '<a href="{{ route('profile') }}?q=' + encodeURIComponent(q) + '" style="display:flex;align-items:center;gap:10px;padding:8px 12px;color:#dce7f8;text-decoration:none;border-bottom:1px solid rgba(59,130,246,0.1);transition:background 150ms;">';
+                                if (song.image_url) {
+                                    html += '<img src="' + song.image_url + '" alt="" style="width:28px;height:28px;border-radius:4px;object-fit:cover;">';
+                                }
+                                html += '<div style="flex:1;min-width:0;"><div style="font-weight:600;font-size:0.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + song.title + '</div><div style="font-size:0.75rem;color:var(--muted);">' + song.artist + '</div></div>';
+                                html += '<span style="font-size:0.75rem;color:var(--muted);flex-shrink:0;">' + time + '</span>';
+                                html += '</a>';
+                            });
+                            results.innerHTML = html;
+                            results.style.display = 'block';
+                            results.querySelectorAll('a').forEach(function(a) {
+                                a.addEventListener('mouseenter', function() { this.style.background = 'rgba(59,130,246,0.12)'; });
+                                a.addEventListener('mouseleave', function() { this.style.background = ''; });
+                                a.addEventListener('click', function() { results.style.display = 'none'; });
+                            });
+                        })
+                        .catch(function() { results.style.display = 'none'; });
+                }, 300);
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!input.contains(e.target) && !results.contains(e.target)) {
+                    results.style.display = 'none';
+                }
+            });
+
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    results.style.display = 'none';
+                }
+            });
+        })();
+
         document.querySelectorAll('.play-btn:not(.played)').forEach(function(btn) {
             btn.addEventListener('click', async function() {
                 const card = this.closest('.song-card');
@@ -410,44 +562,109 @@
             font-weight: 800;
             text-transform: uppercase;
         }
+        .song-card {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            background: linear-gradient(145deg, rgba(12,24,48,0.7), rgba(4,9,18,0.8));
+            border: 1px solid rgba(59,130,246,0.12);
+            border-radius: 8px;
+            transition: border-color 180ms ease, background 180ms ease;
+        }
+        .song-card:hover {
+            border-color: rgba(59,130,246,0.3);
+            background: linear-gradient(145deg, rgba(12,24,48,0.85), rgba(4,9,18,0.9));
+        }
         .play-btn {
             background: linear-gradient(135deg, var(--blue), var(--blue-soft));
-            box-shadow: 0 0 28px var(--glow-blue);
+            box-shadow: 0 0 16px var(--glow-blue);
             border: none;
             border-radius: 50%;
             flex: 0 0 auto;
-            height: 42px;
-            width: 42px;
+            height: 32px;
+            width: 32px;
             position: relative;
             cursor: pointer;
             transition: transform 180ms ease, opacity 180ms ease;
+            padding: 0;
         }
         .play-btn:hover {
             transform: scale(1.08);
         }
         .play-btn.played {
-            background: rgba(147,197,253,0.3);
+            background: rgba(147,197,253,0.25);
             box-shadow: none;
             cursor: default;
             opacity: 0.5;
+            height: 32px;
+            width: 32px;
+        }
+        .song-info {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .song-title {
+            font-size: 0.88rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .song-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            flex-shrink: 0;
         }
         .song-artist {
-            display: block;
             color: var(--muted);
-            margin-top: 5px;
+            font-size: 0.75rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex-shrink: 1;
         }
         .song-duration {
             color: var(--muted);
-            font-size: 0.8rem;
+            font-size: 0.75rem;
+            flex-shrink: 0;
         }
         .played-tag {
             color: var(--blue-soft);
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 700;
+            flex-shrink: 0;
+        }
+        .download-btn {
+            color: var(--blue-soft);
+            text-decoration: none;
+            padding: 2px 6px;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+            transition: color 180ms;
+        }
+        .download-btn:hover {
+            color: white;
         }
         #play-all-btn:disabled {
             opacity: 0.5;
             pointer-events: none;
+        }
+
+        @media (max-width: 600px) {
+            .song-card { padding: 6px 8px; gap: 6px; }
+            .play-btn { height: 28px; width: 28px; }
+            .play-btn span { border-bottom-width: 6px !important; border-left-width: 8px !important; border-top-width: 6px !important; left: 13px !important; top: 10px !important; }
+            .play-btn.played { height: 28px; width: 28px; }
+            .play-btn.played span { font-size: 0.75rem; }
+            .song-title { font-size: 0.82rem; }
+            .song-artist { font-size: 0.7rem; }
+            .song-duration { font-size: 0.7rem; }
+            .played-tag { font-size: 0.65rem; }
+            .download-btn { font-size: 0.8rem; padding: 2px 4px; }
         }
         .form-message {
             padding: 12px 16px;

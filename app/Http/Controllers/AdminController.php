@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use App\Services\AudiusService;
+use App\Services\JamendoService;
 use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
@@ -290,8 +292,46 @@ class AdminController extends Controller
     public function music()
     {
         $this->guard();
-        $songs = Song::latest()->paginate(10);
-        return view('admin.pages.music', compact('songs'));
+        $q = request('q');
+        $songs = Song::when($q, function ($query, $search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('artist', 'like', "%{$search}%");
+            });
+        })->latest()->paginate(10)->withQueryString();
+        return view('admin.pages.music', compact('songs', 'q'));
+    }
+
+    public function loadMoreMusic(Request $request)
+    {
+        $this->guard();
+        $q = $request->input('q');
+        $page = (int) $request->input('page', 2);
+
+        $songs = Song::when($q, function ($query, $search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('artist', 'like', "%{$search}%");
+            });
+        })->latest()->paginate(10, ['*'], 'page', $page);
+
+        $html = '';
+        foreach ($songs as $song) {
+            $mins = intdiv($song->duration, 60);
+            $secs = $song->duration % 60;
+            $html .= '<div class="admin-song-card">';
+            $html .= '<span class="admin-song-info"><strong>' . e($song->title) . '</strong> <small>' . e($song->artist) . '</small></span>';
+            $html .= '<small>' . $mins . ':' . str_pad($secs, 2, '0') . '</small>';
+            $html .= '<span style="color:var(--green);font-size:0.8rem;font-weight:700;">' . ($song->audio_url ? 'Yes' : 'No') . '</span>';
+            $html .= '<a class="btn btn-danger btn-sm" href="' . route('admin.music.delete', $song->id) . '" onclick="return confirm(\'Delete ' . e($song->title) . '?\')">Delete</a>';
+            $html .= '</div>';
+        }
+
+        return response()->json([
+            'html' => $html,
+            'hasMore' => $songs->hasMorePages(),
+            'nextPage' => $page + 1,
+        ]);
     }
 
     public function uploadMusic(Request $request)
@@ -337,6 +377,41 @@ class AdminController extends Controller
         return redirect()->route('admin.music')->with('success', 'Song deleted successfully.');
     }
 
+    public function syncAudius(AudiusService $audius)
+    {
+        $this->guard();
+
+        $keywords = ['nigeria', 'naija', 'afrobeat', 'afropop', 'lagos', 'africa'];
+        $total = 0;
+
+        foreach ($keywords as $keyword) {
+            try {
+                $tracks = $audius->searchTracks($keyword, 50);
+            } catch (\RuntimeException $e) {
+                continue;
+            }
+
+            foreach ($tracks as $track) {
+                try {
+                    Song::updateOrCreate(
+                        ['audius_id' => $track['audius_id']],
+                        [
+                            'title' => $track['title'],
+                            'artist' => $track['artist'],
+                            'duration' => max($track['duration'], 30),
+                            'audio_url' => $track['audio_url'],
+                            'image_url' => $track['image_url'],
+                        ]
+                    );
+                    $total++;
+                } catch (\Throwable) {
+                }
+            }
+        }
+
+        return redirect()->route('admin.music')->with('success', "Imported {$total} track(s) from Audius.");
+    }
+
     public function deleteAllMusic()
     {
         $this->guard();
@@ -348,6 +423,61 @@ class AdminController extends Controller
             $song->delete();
         }
         return redirect()->route('admin.music')->with('success', 'All music deleted successfully.');
+    }
+
+    public function syncJamendo(Request $request, JamendoService $jamendo)
+    {
+        $this->guard();
+
+        $request->validate([
+            'limit' => ['integer', 'min:1', 'max:200'],
+            'tag' => ['nullable', 'string'],
+        ]);
+
+        $limit = $request->integer('limit', 50);
+        $tag = $request->input('tag');
+
+        $params = ['limit' => $limit];
+        if ($tag && $tag !== 'all') {
+            $params['tags'] = $tag;
+        }
+
+        try {
+            $tracks = $jamendo->getTracks($params);
+        } catch (\RuntimeException $e) {
+            return redirect()->route('admin.music')->with('error', $e->getMessage());
+        }
+
+        if (empty($tracks)) {
+            return redirect()->route('admin.music')->with('error', 'No tracks found from Jamendo API.');
+        }
+
+        $imported = 0;
+        $skipped = 0;
+
+        foreach ($tracks as $track) {
+            $existing = Song::where('jamendo_id', $track['jamendo_id'])->first();
+            if ($existing) {
+                $skipped++;
+                continue;
+            }
+
+            Song::create([
+                'jamendo_id' => $track['jamendo_id'],
+                'title' => $track['title'],
+                'artist' => $track['artist'],
+                'duration' => max($track['duration'], 30),
+                'audio_url' => $track['audio_url'],
+                'image_url' => $track['image_url'],
+            ]);
+
+            $imported++;
+        }
+
+        return redirect()->route('admin.music')->with(
+            'success',
+            "Imported {$imported} track(s) from Jamendo. Skipped {$skipped} existing."
+        );
     }
 
     private function extractTitleFromFilename($filename)
